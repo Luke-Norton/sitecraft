@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Site Intake Form</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --border: #232323;
+    --accent: #c8f135;
+    --accent-dim: rgba(200, 241, 53, 0.12);
+    --text: #f0f0f0;
+    --muted: #666;
+    --radius: 12px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* Layout */
+  .shell {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: 100vh;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 40px 24px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+    margin-bottom: 48px;
+  }
+
+  .logo span { color: var(--muted); font-weight: 400; }
+
+  .steps-nav { flex: 1; }
+
+  .step-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 0;
+    cursor: pointer;
+    opacity: 0.4;
+    transition: opacity 0.2s;
+  }
+
+  .step-item.active { opacity: 1; }
+  .step-item.done { opacity: 0.7; }
+
+  .step-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    color: var(--muted);
+  }
+
+  .step-item.active .step-dot {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #000;
+  }
+
+  .step-item.done .step-dot {
+    border-color: var(--accent);
+    background: transparent;
+    color: var(--accent);
+  }
+
+  .step-label {
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0.3px;
+  }
+
+  .step-item.active .step-label { color: var(--text); font-weight: 500; }
+
+  .sidebar-footer {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.6;
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+  }
+
+  /* Main */
+  .main {
+    padding: 60px 80px;
+    max-width: 760px;
+  }
+
+  .step-panel { display: none; }
+  .step-panel.active { display: block; animation: fadeUp 0.3s ease; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .step-header { margin-bottom: 40px; }
+
+  .step-number {
+    font-size: 11px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .step-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1.1;
+    margin-bottom: 10px;
+  }
+
+  .step-desc {
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* Form elements */
+  .field { margin-bottom: 28px; }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #aaa;
+    letter-spacing: 0.3px;
+  }
+
+  input[type="text"],
+  input[type="url"],
+  input[type="email"],
+  input[type="tel"],
+  textarea {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 300;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    resize: none;
+  }
+
+  input:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-dim);
+  }
+
+  ::placeholder { color: #444; }
+
+  textarea { min-height: 100px; line-height: 1.6; }
+
+  .field-hint {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+
+  /* Upload zones */
+  .upload-zone {
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--surface);
+    position: relative;
+  }
+
+  .upload-zone:hover {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .upload-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .upload-icon { font-size: 28px; margin-bottom: 10px; }
+
+  .upload-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .upload-sub { font-size: 12px; color: var(--muted); }
+
+  .file-list {
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .file-tag {
+    background: var(--accent-dim);
+    border: 1px solid rgba(200, 241, 53, 0.3);
+    color: var(--accent);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  /* Dynamic list */
+  .dynamic-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .dynamic-item {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .dynamic-item input { flex: 1; }
+
+  .remove-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    width: 36px;
+    height: 46px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+
+  .remove-btn:hover { border-color: #e55; color: #e55; }
+
+  .add-btn {
+    background: none;
+    border: 1px dashed var(--border);
+    color: var(--muted);
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+    text-align: left;
+    margin-top: 4px;
+  }
+
+  .add-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Structure cards */
+  .structure-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .structure-card {
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--surface);
+  }
+
+  .structure-card:hover { border-color: #555; }
+
+  .structure-card.selected {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .structure-card input[type="radio"] { display: none; }
+
+  .card-icon { font-size: 24px; margin-bottom: 10px; }
+
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .card-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  /* Navigation */
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn {
+    padding: 13px 28px;
+    border-radius: 8px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+  }
+
+  .btn-ghost {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .btn-ghost:hover { border-color: #555; color: var(--text); }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+  }
+
+  .btn-primary:hover { background: #d4f545; transform: translateY(-1px); }
+
+  /* Review panel */
+  .review-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+
+  .review-section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  .review-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .review-key { color: var(--muted); width: 140px; flex-shrink: 0; }
+  .review-val { color: var(--text); flex: 1; word-break: break-word; }
+
+  /* Output */
+  .output-box {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    color: #8b949e;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 500px;
+    overflow-y: auto;
+    margin-top: 20px;
+  }
+
+  .output-box .key { color: #79c0ff; }
+  .output-box .val { color: #a5d6ff; }
+  .output-box .str { color: #a8ff78; }
+
+  /* Color pickers */
+  .color-pickers { display: flex; flex-direction: column; gap: 12px; }
+
+  .color-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    transition: border-color 0.2s;
+  }
+
+  .color-row:hover { border-color: #444; }
+
+  .color-preview-wrap {
+    position: relative;
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  .color-preview-wrap input[type="color"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+  }
+
+  .color-swatch {
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
+    pointer-events: none;
+    transition: background 0.1s;
+  }
+
+  .color-info { flex: 1; }
+
+  .color-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+
+  .color-desc { font-size: 12px; color: var(--muted); line-height: 1.4; margin-bottom: 5px; }
+
+  .color-hex {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+
+  .copy-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 12px;
+  }
+
+  .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+  .copy-btn.copied { color: var(--accent); border-color: var(--accent); }
+
+  .prompt-box {
+    background: #0d1117;
+    border: 1px solid rgba(200, 241, 53, 0.3);
+    border-radius: var(--radius);
+    padding: 24px;
+    font-size: 14px;
+    line-height: 1.8;
+    color: #e0e0e0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 600px;
+    overflow-y: auto;
+    margin-top: 20px;
+  }
+
+  .section-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 8px;
+    margin-top: 24px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* Two col */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  /* Progress bar */
+  .progress-bar {
+    height: 2px;
+    background: var(--border);
+    margin-bottom: 48px;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">site<span>craft</span></div>
+    <nav class="steps-nav">
+      <div class="step-item active" data-step="1">
+        <div class="step-dot">1</div>
+        <div class="step-label">Your Business</div>
+      </div>
+      <div class="step-item" data-step="2">
+        <div class="step-dot">2</div>
+        <div class="step-label">Your Goal</div>
+      </div>
+      <div class="step-item" data-step="3">
+        <div class="step-dot">3</div>
+        <div class="step-label">Your Content</div>
+      </div>
+      <div class="step-item" data-step="4">
+        <div class="step-dot">4</div>
+        <div class="step-label">Your Style</div>
+      </div>
+      <div class="step-item" data-step="5">
+        <div class="step-dot">5</div>
+        <div class="step-label">Structure</div>
+      </div>
+      <div class="step-item" data-step="6">
+        <div class="step-dot">6</div>
+        <div class="step-label">Review & Build</div>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      Fill this out completely.<br>The more detail, the better your site.
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- Step 1 -->
+    <div class="step-panel active" id="step-1">
+      <div class="progress-bar"><div class="progress-fill" style="width:16%"></div></div>
+      <div class="step-header">
+        <div class="step-number">Step 01</div>
+        <div class="step-title">Your Business</div>
+        <div class="step-desc">Let's start with the basics. Tell us who you are.</div>
+      </div>
+
+      <div class="field">
+        <label>Business name</label>
+        <input type="text" id="biz-name" placeholder="e.g. Green Thumb Landscaping">
+      </div>
+
+      <div class="field">
+        <label>What do you do? Describe it like you're telling a friend.</label>
+        <textarea id="biz-desc" placeholder="e.g. I run a small landscaping company in Baton Rouge. We do lawn care, tree trimming, and seasonal cleanups for homeowners and small businesses."></textarea>
+      </div>
+
+      <div class="field">
+        <label>Where are you located?</label>
+        <input type="text" id="biz-location" placeholder="e.g. Denham Springs, Louisiana">
+        <div class="field-hint">Or type "Online only" if you serve customers remotely.</div>
+      </div>
+
+      <div class="nav-row">
+        <div></div>
+        <button class="btn btn-primary" onclick="goTo(2)">Next →</button>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step-panel" id="step-2">
+      <div class="progress-bar"><div class="progress-fill" style="width:32%"></div></div>
+      <div class="step-header">
+        <div class="step-number">Step 02</div>
+        <div class="step-title">Your Goal</div>
+        <div class="step-desc">What do you want your website to actually do for you?</div>
+      </div>
+
+      <div class="field">
+        <label>When someone visits your website, what's the most important thing you want them to do?</label>
+        <textarea id="site-goal" placeholder="e.g. Call me for a free quote. I want my phone number to be the first thing they see." style="min-height:120px"></textarea>
+        <div class="field-hint">Examples: "Book an appointment", "Call me", "Learn about my services and then contact me", "Buy my products online"</div>
+      </div>
+
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="goTo(1)">← Back</button>
+        <button class="btn btn-primary" onclick="goTo(3)">Next →</button>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step-panel" id="step-3">
+      <div class="progress-bar"><div class="progress-fill" style="width:50%"></div></div>
+      <div class="step-header">
+        <div class="step-number">Step 03</div>
+        <div class="step-title">Your Content</div>
+        <div class="step-desc">This is the raw material your site is built from. The more you give, the better it'll be.</div>
+      </div>
+
+      <div class="field">
+        <label>Upload your logo <span style="color:var(--muted);font-weight:300">(optional)</span></label>
+        <div class="upload-zone" id="logo-zone">
+          <input type="file" id="logo-upload" accept="image/*" onchange="handleFile(this, 'logo-files')">
+          <div class="upload-icon">🖼</div>
+          <div class="upload-label">Drop your logo here or click to browse</div>
+          <div class="upload-sub">Don't have one? No worries — we'll use your business name as text.</div>
+        </div>
+        <div class="file-list" id="logo-files"></div>
+      </div>
+
+      <div class="field">
+        <label>Upload photos for your site <span style="color:var(--muted);font-weight:300">(optional but recommended)</span></label>
+        <div class="upload-zone">
+          <input type="file" id="photos-upload" accept="image/*" multiple onchange="handleFile(this, 'photo-files')">
+          <div class="upload-icon">📷</div>
+          <div class="upload-label">Drop your photos here or click to browse</div>
+          <div class="upload-sub">Phone photos are totally fine. Upload as many as you have.</div>
+        </div>
+        <div class="file-list" id="photo-files"></div>
+      </div>
+
+      <div class="field">
+        <label>Tell us about your business in a few sentences</label>
+        <textarea id="biz-about" placeholder="e.g. We've been serving the Baton Rouge area since 2010. Family owned and operated, we take pride in showing up on time and doing the job right the first time. No job is too big or too small." style="min-height:120px"></textarea>
+        <div class="field-hint">This will appear as your "About" section. Write it in your own voice.</div>
+      </div>
+
+      <div class="field">
+        <label>What are your main services or products?</label>
+        <div class="dynamic-list" id="services-list">
+          <div class="dynamic-item">
+            <input type="text" placeholder="e.g. Lawn mowing">
+            <button class="remove-btn" onclick="removeItem(this)">×</button>
+          </div>
+        </div>
+        <button class="add-btn" onclick="addService()">+ Add another service</button>
+      </div>
+
+      <div class="field">
+        <label>Contact info</label>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <input type="tel" id="contact-phone" placeholder="Phone number">
+          <input type="email" id="contact-email" placeholder="Email address">
+          <input type="text" id="contact-address" placeholder="Business address (if applicable)">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Social media links <span style="color:var(--muted);font-weight:300">(optional)</span></label>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <input type="url" id="social-fb" placeholder="Facebook URL">
+          <input type="url" id="social-ig" placeholder="Instagram URL">
+          <input type="url" id="social-other" placeholder="Any other link">
+        </div>
+      </div>
+
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="goTo(2)">← Back</button>
+        <button class="btn btn-primary" onclick="goTo(4)">Next →</button>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step-panel" id="step-4">
+      <div class="progress-bar"><div class="progress-fill" style="width:66%"></div></div>
+      <div class="step-header">
+        <div class="step-number">Step 04</div>
+        <div class="step-title">Your Style</div>
+        <div class="step-desc">Help us understand the look and feel you're going for.</div>
+      </div>
+
+      <div class="field">
+        <label>Describe how you want your site to look and feel</label>
+        <textarea id="style-keywords" placeholder="e.g. Clean, professional, trustworthy. Not too flashy. Simple and easy to read. I want it to feel like a local family business, not a big corporation." style="min-height:120px"></textarea>
+        <div class="field-hint">Use words that come naturally — clean, bold, warm, minimal, colorful, serious, friendly, modern, rustic, etc.</div>
+      </div>
+
+      <div class="field">
+        <label>Share a website you like the look of <span style="color:var(--muted);font-weight:300">(doesn't have to be in your industry)</span></label>
+        <input type="url" id="inspo-1" placeholder="https://example.com">
+        <div class="field-hint">We'll use this as a style reference, not copy it.</div>
+      </div>
+
+      <div class="field">
+        <label>Another website for inspiration <span style="color:var(--muted);font-weight:300">(optional)</span></label>
+        <input type="url" id="inspo-2" placeholder="https://example.com">
+      </div>
+
+      <div class="field">
+        <label>Colors <span style="color:var(--muted);font-weight:300">(optional — skip if unsure, we'll match your style keywords)</span></label>
+        <div class="color-pickers">
+
+          <div class="color-row">
+            <div class="color-preview-wrap">
+              <input type="color" id="color-primary" value="#1a73e8" oninput="updateColorLabel('color-primary', 'label-primary')">
+              <div class="color-swatch" id="swatch-primary" style="background:#1a73e8"></div>
+            </div>
+            <div class="color-info">
+              <div class="color-title">Primary Color</div>
+              <div class="color-desc">Your main brand color. Used for buttons, headings, and key elements.</div>
+              <div class="color-hex" id="label-primary">#1a73e8</div>
+            </div>
+          </div>
+
+          <div class="color-row">
+            <div class="color-preview-wrap">
+              <input type="color" id="color-accent" value="#f4a61d" oninput="updateColorLabel('color-accent', 'label-accent')">
+              <div class="color-swatch" id="swatch-accent" style="background:#f4a61d"></div>
+            </div>
+            <div class="color-info">
+              <div class="color-title">Accent Color</div>
+              <div class="color-desc">A secondary pop of color for highlights, hover effects, and details.</div>
+              <div class="color-hex" id="label-accent">#f4a61d</div>
+            </div>
+          </div>
+
+          <div class="color-row">
+            <div class="color-preview-wrap">
+              <input type="color" id="color-bg" value="#ffffff" oninput="updateColorLabel('color-bg', 'label-bg')">
+              <div class="color-swatch" id="swatch-bg" style="background:#ffffff;border:1px solid #333"></div>
+            </div>
+            <div class="color-info">
+              <div class="color-title">Background Color</div>
+              <div class="color-desc">The main background of your site. Usually white, cream, or very light.</div>
+              <div class="color-hex" id="label-bg">#ffffff</div>
+            </div>
+          </div>
+
+        </div>
+        <div class="field-hint" style="margin-top:14px">Not sure? Leave these as-is and just describe your vibe in the keywords field above — we'll figure it out.</div>
+      </div>
+
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="goTo(3)">← Back</button>
+        <button class="btn btn-primary" onclick="goTo(5)">Next →</button>
+      </div>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="step-panel" id="step-5">
+      <div class="progress-bar"><div class="progress-fill" style="width:82%"></div></div>
+      <div class="step-header">
+        <div class="step-number">Step 05</div>
+        <div class="step-title">Structure</div>
+        <div class="step-desc">How much do you want to share on your site?</div>
+      </div>
+
+      <div class="field">
+        <div class="structure-cards">
+          <label class="structure-card" id="card-simple">
+            <input type="radio" name="structure" value="simple" onchange="selectCard('simple')">
+            <div class="card-icon">📄</div>
+            <div class="card-title">Just the Basics</div>
+            <div class="card-desc">One page. Who you are, what you do, how to reach you. Clean and fast.</div>
+          </label>
+          <label class="structure-card" id="card-standard">
+            <input type="radio" name="structure" value="standard" onchange="selectCard('standard')">
+            <div class="card-icon">📋</div>
+            <div class="card-title">A Bit More</div>
+            <div class="card-desc">Home, Services, About, and Contact. The full picture without going overboard.</div>
+          </label>
+          <label class="structure-card" id="card-full">
+            <input type="radio" name="structure" value="full" onchange="selectCard('full')">
+            <div class="card-icon">🗂</div>
+            <div class="card-title">The Full Picture</div>
+            <div class="card-desc">Multiple pages, gallery, team section, the works.</div>
+          </label>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:28px">
+        <label>Anything else you want on the site? <span style="color:var(--muted);font-weight:300">(optional)</span></label>
+        <textarea id="extra-notes" placeholder="e.g. I want a FAQ section, a map showing my location, a before & after photo gallery, customer reviews..."></textarea>
+      </div>
+
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="goTo(4)">← Back</button>
+        <button class="btn btn-primary" onclick="goTo(6)">Review →</button>
+      </div>
+    </div>
+
+    <!-- Step 6 -->
+    <div class="step-panel" id="step-6">
+      <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+      <div class="step-header">
+        <div class="step-number">Step 06</div>
+        <div class="step-title">Review & Build</div>
+        <div class="step-desc">Here's everything we collected. Review it, then copy the prompt below and paste it into Claude Code.</div>
+      </div>
+
+      <div id="review-output"></div>
+
+      <div class="section-label" style="margin-top:32px">Claude Code Prompt</div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.6">Copy this entire prompt and paste it into Claude Code. It contains everything Claude needs to build your site.</p>
+
+      <div class="prompt-box" id="prompt-output"></div>
+      <button class="copy-btn" id="copy-btn" onclick="copyPrompt()">Copy prompt to clipboard</button>
+
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="goTo(5)">← Back</button>
+        <div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  let currentStep = 1;
+  let selectedStructure = '';
+  let logoFiles = [];
+  let photoFiles = [];
+
+  function updateColorLabel(inputId, labelId) {
+    const val = document.getElementById(inputId).value;
+    document.getElementById(labelId).textContent = val;
+    const swatchId = inputId.replace('color-', 'swatch-');
+    document.getElementById(swatchId).style.background = val;
+  }
+
+  function goTo(step) {
+    document.getElementById(`step-${currentStep}`).classList.remove('active');
+    document.querySelectorAll('.step-item').forEach(el => {
+      const s = parseInt(el.dataset.step);
+      el.classList.remove('active', 'done');
+      if (s === step) el.classList.add('active');
+      else if (s < step) el.classList.add('done');
+    });
+    currentStep = step;
+    document.getElementById(`step-${step}`).classList.add('active');
+    if (step === 6) buildReview();
+    window.scrollTo(0, 0);
+  }
+
+  function selectCard(val) {
+    selectedStructure = val;
+    ['simple','standard','full'].forEach(v => {
+      document.getElementById(`card-${v}`).classList.toggle('selected', v === val);
+    });
+  }
+
+  function addService() {
+    const list = document.getElementById('services-list');
+    const item = document.createElement('div');
+    item.className = 'dynamic-item';
+    item.innerHTML = `<input type="text" placeholder="e.g. Pressure washing"><button class="remove-btn" onclick="removeItem(this)">×</button>`;
+    list.appendChild(item);
+  }
+
+  function removeItem(btn) {
+    const list = document.getElementById('services-list');
+    if (list.children.length > 1) btn.parentElement.remove();
+  }
+
+  function handleFile(input, targetId) {
+    const container = document.getElementById(targetId);
+    container.innerHTML = '';
+    Array.from(input.files).forEach(f => {
+      const tag = document.createElement('div');
+      tag.className = 'file-tag';
+      tag.textContent = f.name;
+      container.appendChild(tag);
+    });
+    if (targetId === 'logo-files') logoFiles = Array.from(input.files);
+    else photoFiles = Array.from(input.files);
+  }
+
+  function getServices() {
+    return Array.from(document.querySelectorAll('#services-list input'))
+      .map(i => i.value.trim()).filter(Boolean);
+  }
+
+  function getStructureLabel() {
+    const map = { simple: 'Single page (basics only)', standard: 'Multi-page (Home, Services, About, Contact)', full: 'Full site (multiple pages, gallery, team, etc.)' };
+    return map[selectedStructure] || 'Not selected';
+  }
+
+  function buildReview() {
+    const data = collectData();
+    const review = document.getElementById('review-output');
+
+    const sections = [
+      { title: 'Business', rows: [
+        ['Name', data.bizName],
+        ['Description', data.bizDesc],
+        ['Location', data.bizLocation],
+      ]},
+      { title: 'Goal', rows: [
+        ['Primary goal', data.siteGoal],
+      ]},
+      { title: 'Content', rows: [
+        ['About', data.bizAbout],
+        ['Services', data.services.join(', ') || '—'],
+        ['Phone', data.phone],
+        ['Email', data.email],
+        ['Address', data.address],
+        ['Facebook', data.facebook],
+        ['Instagram', data.instagram],
+        ['Other link', data.otherSocial],
+        ['Logo uploaded', logoFiles.length > 0 ? logoFiles[0].name : 'None'],
+        ['Photos uploaded', photoFiles.length > 0 ? photoFiles.map(f=>f.name).join(', ') : 'None'],
+      ]},
+      { title: 'Style', rows: [
+        ['Keywords', data.styleKeywords],
+        ['Primary color', data.colorPrimary],
+        ['Accent color', data.colorAccent],
+        ['Background color', data.colorBg],
+        ['Inspiration 1', data.inspo1],
+        ['Inspiration 2', data.inspo2],
+      ]},
+      { title: 'Structure', rows: [
+        ['Layout', getStructureLabel()],
+        ['Extra notes', data.extraNotes],
+      ]},
+    ];
+
+    review.innerHTML = sections.map(s => `
+      <div class="review-section">
+        <div class="review-section-title">${s.title}</div>
+        ${s.rows.filter(r => r[1]).map(r => `
+          <div class="review-row">
+            <div class="review-key">${r[0]}</div>
+            <div class="review-val">${r[1]}</div>
+          </div>
+        `).join('')}
+      </div>
+    `).join('');
+
+    document.getElementById('prompt-output').textContent = buildPrompt(data);
+  }
+
+  function collectData() {
+    return {
+      bizName: document.getElementById('biz-name').value.trim(),
+      bizDesc: document.getElementById('biz-desc').value.trim(),
+      bizLocation: document.getElementById('biz-location').value.trim(),
+      siteGoal: document.getElementById('site-goal').value.trim(),
+      bizAbout: document.getElementById('biz-about').value.trim(),
+      services: getServices(),
+      phone: document.getElementById('contact-phone').value.trim(),
+      email: document.getElementById('contact-email').value.trim(),
+      address: document.getElementById('contact-address').value.trim(),
+      facebook: document.getElementById('social-fb').value.trim(),
+      instagram: document.getElementById('social-ig').value.trim(),
+      otherSocial: document.getElementById('social-other').value.trim(),
+      styleKeywords: document.getElementById('style-keywords').value.trim(),
+      inspo1: document.getElementById('inspo-1').value.trim(),
+      inspo2: document.getElementById('inspo-2').value.trim(),
+      structure: selectedStructure,
+      extraNotes: document.getElementById('extra-notes').value.trim(),
+      colorPrimary: document.getElementById('color-primary').value,
+      colorAccent: document.getElementById('color-accent').value,
+      colorBg: document.getElementById('color-bg').value,
+    };
+  }
+
+  function buildPrompt(d) {
+    const structureMap = {
+      simple: 'a single-page website with sections for: hero/intro, services summary, about, and contact',
+      standard: 'a multi-page website with the following pages: Home, Services, About, and Contact',
+      full: 'a full multi-page website with: Home, Services, About, Contact, a photo gallery, and any other sections that fit the content'
+    };
+
+    const lines = [];
+    lines.push(`You are a professional web developer. Build a complete, production-ready static website based on the following client brief. Use only HTML, CSS, and minimal vanilla JavaScript. The site must be fully mobile responsive, visually polished, and ready to deploy.\n`);
+
+    lines.push(`## BUSINESS OVERVIEW`);
+    if (d.bizName) lines.push(`- Business name: ${d.bizName}`);
+    if (d.bizDesc) lines.push(`- What they do: ${d.bizDesc}`);
+    if (d.bizLocation) lines.push(`- Location: ${d.bizLocation}`);
+
+    lines.push(`\n## PRIMARY GOAL`);
+    if (d.siteGoal) lines.push(`- ${d.siteGoal}`);
+    lines.push(`Make sure the call-to-action reflecting this goal is prominent and clear on every page.`);
+
+    lines.push(`\n## CONTENT TO INCLUDE`);
+    if (d.bizAbout) lines.push(`About section: "${d.bizAbout}"`);
+    if (d.services.length) lines.push(`Services/products: ${d.services.join(', ')}`);
+    if (d.phone) lines.push(`Phone: ${d.phone}`);
+    if (d.email) lines.push(`Email: ${d.email}`);
+    if (d.address) lines.push(`Address: ${d.address}`);
+    if (d.facebook) lines.push(`Facebook: ${d.facebook}`);
+    if (d.instagram) lines.push(`Instagram: ${d.instagram}`);
+    if (d.otherSocial) lines.push(`Other link: ${d.otherSocial}`);
+    if (logoFiles.length) lines.push(`Logo: Client has provided a logo file (${logoFiles[0].name}) — use a placeholder image tag with src="logo.png" and alt="${d.bizName} logo"`);
+    else lines.push(`No logo provided — use the business name as a styled text logo in the header.`);
+    if (photoFiles.length) lines.push(`Photos: Client has provided ${photoFiles.length} photo(s) — use placeholder img tags with descriptive alt attributes and src="photo1.jpg", "photo2.jpg" etc.`);
+
+    lines.push(`\n## DESIGN STYLE`);
+    if (d.styleKeywords) lines.push(`Desired look and feel: ${d.styleKeywords}`);
+    lines.push(`Color palette:`);
+    lines.push(`  - Primary color: ${d.colorPrimary} (use for buttons, headings, nav, key UI elements)`);
+    lines.push(`  - Accent color: ${d.colorAccent} (use for highlights, hover states, badges, secondary elements)`);
+    lines.push(`  - Background color: ${d.colorBg} (main page background)`);
+    if (d.inspo1) lines.push(`Style inspiration website 1: ${d.inspo1}`);
+    if (d.inspo2) lines.push(`Style inspiration website 2: ${d.inspo2}`);
+    lines.push(`Match the visual tone to the keywords provided. Prioritize readability, trust, and professionalism.`);
+
+    lines.push(`\n## SITE STRUCTURE`);
+    lines.push(`Build ${structureMap[d.structure] || structureMap.standard}.`);
+    if (d.extraNotes) lines.push(`Additional requests: ${d.extraNotes}`);
+
+    lines.push(`\n## TECHNICAL REQUIREMENTS`);
+    lines.push(`- Fully mobile responsive (works perfectly on phone, tablet, desktop)`);
+    lines.push(`- Include proper HTML meta tags: title, description, viewport, Open Graph`);
+    lines.push(`- Include a sitemap.xml file`);
+    lines.push(`- SEO optimized: semantic HTML, proper heading hierarchy, descriptive alt tags`);
+    lines.push(`- Fast loading: no unnecessary dependencies, inline critical CSS`);
+    lines.push(`- If a contact form is needed, build it with HTML and note that a backend or service like Formspree is required for it to send emails`);
+    lines.push(`- Clean, well-commented code`);
+    lines.push(`\nDeliver all files needed to deploy the site. Start with index.html.`);
+
+    return lines.join('\n');
+  }
+
+  function copyPrompt() {
+    const text = document.getElementById('prompt-output').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = '✓ Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy prompt to clipboard';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+</script>
+</body>
+</html>
