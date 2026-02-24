@@ -1,0 +1,6 @@
+export { default as Step1Business } from './Step1Business'
+export { default as Step2Goal } from './Step2Goal'
+export { default as Step3Content } from './Step3Content'
+export { default as Step4Style } from './Step4Style'
+export { default as Step5Structure } from './Step5Structure'
+export { default as Step6Review } from './Step6Review'
