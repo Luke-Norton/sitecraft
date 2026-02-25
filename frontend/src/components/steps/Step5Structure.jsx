@@ -114,6 +114,15 @@ const featureOptions = [
   { id: 'chat-widget', label: 'Chat Widget Placeholder' },
 ]
 
+// Get section label for display
+const getSectionLabel = (sectionId, customSections = []) => {
+  const preset = sectionOptions.find(s => s.id === sectionId)
+  if (preset) return preset.label
+  const custom = customSections.find(s => s.name === sectionId)
+  if (custom) return custom.name
+  return sectionId
+}
+
 export default function Step5Structure({
   formData,
   updateField,
@@ -125,9 +134,18 @@ export default function Step5Structure({
   addCustomFeature,
   updateCustomFeature,
   removeCustomFeature,
+  assignPhotoToSection,
   onBack,
   onNext,
 }) {
+  // Get all available sections for image assignment
+  const availableSections = [
+    ...formData.sections,
+    ...formData.customSections.filter(s => s.name).map(s => s.name),
+  ]
+
+  // Create object URLs for photo previews
+  const photoUrls = formData.photoFiles.map(file => URL.createObjectURL(file))
   return (
     <div className="animate-fade-up">
       <ProgressBar step={5} />
@@ -203,6 +221,49 @@ export default function Step5Structure({
           </div>
         ))}
       </div>
+
+      {/* Image Assignment */}
+      {formData.photoFiles.length > 0 && (
+        <FormField
+          label="Assign your images to sections"
+          hint="Tell us where each image should appear on your site."
+          className="mt-8"
+        >
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {formData.photoFiles.map((file, index) => (
+              <div
+                key={index}
+                className="bg-surface border border-border rounded-sc overflow-hidden"
+              >
+                <div className="aspect-square relative">
+                  <img
+                    src={photoUrls[index]}
+                    alt={file.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-2">
+                  <p className="text-xs text-muted truncate mb-2" title={file.name}>
+                    {file.name}
+                  </p>
+                  <select
+                    value={formData.photoAssignments[index] || ''}
+                    onChange={(e) => assignPhotoToSection(index, e.target.value)}
+                    className="w-full bg-[#1a1a1a] border border-border rounded-sc px-2 py-1.5 text-xs text-white focus:outline-none focus:border-accent"
+                  >
+                    <option value="">Auto (AI decides)</option>
+                    {availableSections.map((sectionId) => (
+                      <option key={sectionId} value={sectionId}>
+                        {getSectionLabel(sectionId, formData.customSections)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            ))}
+          </div>
+        </FormField>
+      )}
 
       {/* Font Pairing */}
       <div className="mt-8">

@@ -12,6 +12,7 @@ const initialState = {
   // Step 3 - Content
   logoFile: null,
   photoFiles: [],
+  photoAssignments: {}, // { [photoIndex]: sectionId }
   bizAbout: '',
   services: [''],
   phone: '',
@@ -79,7 +80,24 @@ export function useFormState() {
   }, [])
 
   const setPhotoFiles = useCallback((files) => {
-    setFormData(prev => ({ ...prev, photoFiles: Array.from(files) }))
+    const newFiles = Array.isArray(files) ? files : Array.from(files || [])
+    setFormData(prev => {
+      const prevLength = prev.photoFiles.length
+      // If adding files (length increased), preserve all existing assignments
+      // If removing files, we need to clear assignments since indices shift
+      const newAssignments = newFiles.length >= prevLength ? { ...prev.photoAssignments } : {}
+      return { ...prev, photoFiles: newFiles, photoAssignments: newAssignments }
+    })
+  }, [])
+
+  const assignPhotoToSection = useCallback((photoIndex, sectionId) => {
+    setFormData(prev => ({
+      ...prev,
+      photoAssignments: {
+        ...prev.photoAssignments,
+        [photoIndex]: sectionId || null, // null means "auto/unassigned"
+      },
+    }))
   }, [])
 
   const toggleVisualEffect = useCallback((effect) => {
@@ -167,6 +185,7 @@ export function useFormState() {
     removeService,
     setLogoFile,
     setPhotoFiles,
+    assignPhotoToSection,
     toggleVisualEffect,
     toggleSection,
     toggleFeature,

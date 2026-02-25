@@ -85,6 +85,14 @@ router.post(
         customFeatures = []
       }
 
+      // Parse photo assignments
+      let photoAssignments = {}
+      try {
+        photoAssignments = JSON.parse(req.body.photoAssignments || '{}')
+      } catch {
+        photoAssignments = {}
+      }
+
       // Save submission to database
       const submissionData = {
         id: submissionId,
@@ -122,6 +130,7 @@ router.post(
         extra_notes: req.body.extraNotes || '',
         logo_url: logoUrl,
         photo_urls: photoUrls,
+        photo_assignments: photoAssignments,
         status: 'pending',
         created_at: new Date().toISOString(),
       }

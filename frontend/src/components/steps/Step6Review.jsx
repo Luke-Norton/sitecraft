@@ -106,6 +106,12 @@ export default function Step6Review({ formData, onBack, onSubmit, isSubmitting }
           ['Other link', formData.otherSocial],
           ['Logo', formData.logoFile?.name || null],
           ['Photos', formData.photoFiles.length > 0 ? `${formData.photoFiles.length} photo(s)` : null],
+          ['Photo assignments', formData.photoFiles.length > 0 && Object.keys(formData.photoAssignments || {}).length > 0
+            ? Object.entries(formData.photoAssignments)
+                .filter(([_, section]) => section)
+                .map(([idx, section]) => `${formData.photoFiles[idx]?.name?.slice(0, 15)}... → ${section}`)
+                .join(', ') || 'All auto-assigned'
+            : formData.photoFiles.length > 0 ? 'All auto-assigned' : null],
         ]}
       />
 

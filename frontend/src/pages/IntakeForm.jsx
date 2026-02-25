@@ -27,6 +27,7 @@ export default function IntakeForm() {
     removeService,
     setLogoFile,
     setPhotoFiles,
+    assignPhotoToSection,
     toggleVisualEffect,
     toggleSection,
     toggleFeature,
@@ -93,6 +94,9 @@ export default function IntakeForm() {
         data.append('photos', file)
       })
 
+      // Add photo assignments
+      data.append('photoAssignments', JSON.stringify(formData.photoAssignments))
+
       const result = await submitForm(data)
       navigate(`/build/${result.submissionId}`)
     } catch (err) {
@@ -149,6 +153,7 @@ export default function IntakeForm() {
             addCustomFeature={addCustomFeature}
             updateCustomFeature={updateCustomFeature}
             removeCustomFeature={removeCustomFeature}
+            assignPhotoToSection={assignPhotoToSection}
             onBack={() => goTo(4)}
             onNext={() => goTo(6)}
           />

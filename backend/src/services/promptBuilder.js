@@ -216,8 +216,38 @@ CRITICAL: Output ONLY raw HTML code. No markdown, no explanations, no commentary
   }
 
   if (d.photo_urls?.length > 0) {
-    lines.push(`Photos provided:`)
-    d.photo_urls.forEach((url, i) => lines.push(`  ${i + 1}. ${url}`))
+    const photoAssignments = d.photo_assignments || {}
+
+    // Group photos by section
+    const photosBySection = {}
+    const unassignedPhotos = []
+
+    d.photo_urls.forEach((url, i) => {
+      const section = photoAssignments[i]
+      if (section) {
+        if (!photosBySection[section]) {
+          photosBySection[section] = []
+        }
+        photosBySection[section].push({ url, index: i + 1 })
+      } else {
+        unassignedPhotos.push({ url, index: i + 1 })
+      }
+    })
+
+    lines.push(`\nPhotos provided:`)
+
+    // List photos by section assignment
+    Object.entries(photosBySection).forEach(([section, photos]) => {
+      lines.push(`\n  FOR ${section.toUpperCase()} SECTION:`)
+      photos.forEach(p => lines.push(`    - ${p.url}`))
+    })
+
+    if (unassignedPhotos.length > 0) {
+      lines.push(`\n  UNASSIGNED (use where appropriate):`)
+      unassignedPhotos.forEach(p => lines.push(`    - ${p.url}`))
+    }
+
+    lines.push(`\nIMPORTANT: Use the photos EXACTLY as assigned above. Photos marked for a specific section MUST appear in that section.`)
   }
 
   lines.push(`\n## COLORS`)
