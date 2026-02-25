@@ -27,6 +27,15 @@ export default function IntakeForm() {
     removeService,
     setLogoFile,
     setPhotoFiles,
+    toggleVisualEffect,
+    toggleSection,
+    toggleFeature,
+    addCustomSection,
+    updateCustomSection,
+    removeCustomSection,
+    addCustomFeature,
+    updateCustomFeature,
+    removeCustomFeature,
   } = useFormState()
 
   const goTo = (step) => {
@@ -61,7 +70,19 @@ export default function IntakeForm() {
       data.append('colorPrimary', formData.colorPrimary)
       data.append('colorAccent', formData.colorAccent)
       data.append('colorBg', formData.colorBg)
-      data.append('structure', formData.structure)
+      data.append('animationLevel', formData.animationLevel)
+      data.append('designStyle', formData.designStyle)
+      data.append('visualEffects', JSON.stringify(formData.visualEffects))
+      data.append('sections', JSON.stringify(formData.sections))
+      data.append('customSections', JSON.stringify(formData.customSections.filter(s => s.name)))
+      data.append('fontPairing', formData.fontPairing)
+      data.append('customFont', formData.customFont)
+      data.append('headerStyle', formData.headerStyle)
+      data.append('customHeaderStyle', formData.customHeaderStyle)
+      data.append('heroStyle', formData.heroStyle)
+      data.append('customHeroStyle', formData.customHeroStyle)
+      data.append('includeFeatures', JSON.stringify(formData.includeFeatures))
+      data.append('customFeatures', JSON.stringify(formData.customFeatures.filter(Boolean)))
       data.append('extraNotes', formData.extraNotes)
 
       // Add files
@@ -111,6 +132,7 @@ export default function IntakeForm() {
         return (
           <Step4Style
             {...commonProps}
+            toggleVisualEffect={toggleVisualEffect}
             onBack={() => goTo(3)}
             onNext={() => goTo(5)}
           />
@@ -119,6 +141,14 @@ export default function IntakeForm() {
         return (
           <Step5Structure
             {...commonProps}
+            toggleSection={toggleSection}
+            toggleFeature={toggleFeature}
+            addCustomSection={addCustomSection}
+            updateCustomSection={updateCustomSection}
+            removeCustomSection={removeCustomSection}
+            addCustomFeature={addCustomFeature}
+            updateCustomFeature={updateCustomFeature}
+            removeCustomFeature={removeCustomFeature}
             onBack={() => goTo(4)}
             onNext={() => goTo(6)}
           />

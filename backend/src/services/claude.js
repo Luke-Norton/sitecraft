@@ -8,8 +8,8 @@ export async function streamGeneration(prompt, onChunk) {
   let fullContent = ''
 
   const stream = await anthropic.messages.stream({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 16000,
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 64000,
     messages: [
       {
         role: 'user',

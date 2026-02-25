@@ -3,10 +3,68 @@ import StepHeader from '../StepHeader'
 import ReviewSection from '../ReviewSection'
 import Button from '../Button'
 
-const structureLabels = {
-  simple: 'Single page (basics only)',
-  standard: 'Multi-page (Home, Services, About, Contact)',
-  full: 'Full site (multiple pages, gallery, team, etc.)',
+const designStyleLabels = {
+  minimal: 'Clean & Minimal',
+  modern: 'Modern & Professional',
+  bold: 'Bold & Creative',
+}
+
+const animationLabels = {
+  minimal: 'Minimal',
+  moderate: 'Moderate',
+  dynamic: 'Dynamic',
+}
+
+const effectLabels = {
+  shadows: 'Drop Shadows',
+  rounded: 'Rounded Corners',
+  gradients: 'Gradients',
+  glassmorphism: 'Glass Effects',
+  patterns: 'Background Patterns',
+  animations: 'Floating Elements',
+}
+
+const sectionLabels = {
+  hero: 'Hero',
+  services: 'Services',
+  about: 'About',
+  gallery: 'Gallery',
+  testimonials: 'Testimonials',
+  team: 'Team',
+  pricing: 'Pricing',
+  faq: 'FAQ',
+  contact: 'Contact',
+}
+
+const fontLabels = {
+  modern: 'Modern (Inter)',
+  classic: 'Classic (Playfair + Lato)',
+  bold: 'Bold (Oswald + Open Sans)',
+  friendly: 'Friendly (Nunito)',
+  professional: 'Professional (Montserrat)',
+  elegant: 'Elegant (Cormorant)',
+}
+
+const headerLabels = {
+  standard: 'Standard (Logo left)',
+  centered: 'Centered',
+  minimal: 'Minimal',
+}
+
+const heroLabels = {
+  fullscreen: 'Full Screen',
+  half: 'Half Screen',
+  split: 'Split Layout',
+  simple: 'Simple',
+}
+
+const featureLabels = {
+  'cta-sticky': 'Sticky CTA',
+  'back-to-top': 'Back to Top',
+  'social-float': 'Floating Social',
+  'newsletter': 'Newsletter',
+  'map': 'Map',
+  'chat-widget': 'Chat Widget',
 }
 
 export default function Step6Review({ formData, onBack, onSubmit, isSubmitting }) {
@@ -46,23 +104,21 @@ export default function Step6Review({ formData, onBack, onSubmit, isSubmitting }
           ['Facebook', formData.facebook],
           ['Instagram', formData.instagram],
           ['Other link', formData.otherSocial],
-          ['Logo uploaded', formData.logoFile?.name || null],
-          [
-            'Photos uploaded',
-            formData.photoFiles.length > 0
-              ? formData.photoFiles.map((f) => f.name).join(', ')
-              : null,
-          ],
+          ['Logo', formData.logoFile?.name || null],
+          ['Photos', formData.photoFiles.length > 0 ? `${formData.photoFiles.length} photo(s)` : null],
         ]}
       />
 
       <ReviewSection
-        title="Style"
+        title="Design"
         rows={[
-          ['Keywords', formData.styleKeywords],
+          ['Style keywords', formData.styleKeywords],
+          ['Design style', designStyleLabels[formData.designStyle]],
+          ['Animations', animationLabels[formData.animationLevel]],
+          ['Effects', formData.visualEffects?.map(e => effectLabels[e]).join(', ')],
           ['Primary color', formData.colorPrimary],
           ['Accent color', formData.colorAccent],
-          ['Background color', formData.colorBg],
+          ['Background', formData.colorBg],
           ['Inspiration 1', formData.inspo1],
           ['Inspiration 2', formData.inspo2],
         ]}
@@ -71,7 +127,25 @@ export default function Step6Review({ formData, onBack, onSubmit, isSubmitting }
       <ReviewSection
         title="Structure"
         rows={[
-          ['Layout', structureLabels[formData.structure] || 'Not selected'],
+          ['Sections', formData.sections?.map(s => sectionLabels[s]).join(', ')],
+          ['Custom sections', formData.customSections?.filter(s => s.name).length > 0
+            ? formData.customSections.filter(s => s.name).map(s => s.name).join(', ')
+            : null],
+          ['Font', formData.fontPairing === 'custom'
+            ? `Custom: ${formData.customFont || '(not specified)'}`
+            : fontLabels[formData.fontPairing]],
+          ['Header', formData.headerStyle === 'custom'
+            ? `Custom: ${formData.customHeaderStyle || '(not specified)'}`
+            : headerLabels[formData.headerStyle]],
+          ['Hero', formData.heroStyle === 'custom'
+            ? `Custom: ${formData.customHeroStyle || '(not specified)'}`
+            : heroLabels[formData.heroStyle]],
+          ['Features', formData.includeFeatures?.length > 0
+            ? formData.includeFeatures.map(f => featureLabels[f]).join(', ')
+            : null],
+          ['Custom features', formData.customFeatures?.filter(Boolean).length > 0
+            ? formData.customFeatures.filter(Boolean).join(', ')
+            : null],
           ['Extra notes', formData.extraNotes],
         ]}
       />

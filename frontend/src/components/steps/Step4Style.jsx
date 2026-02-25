@@ -2,9 +2,55 @@ import ProgressBar from '../ProgressBar'
 import StepHeader from '../StepHeader'
 import FormField, { TextInput, TextArea } from '../FormField'
 import ColorPicker from '../ColorPicker'
+import StyleSelector, { EffectToggles } from '../StyleSelector'
 import NavRow from '../NavRow'
 
-export default function Step4Style({ formData, updateField, onBack, onNext }) {
+const animationOptions = [
+  {
+    id: 'minimal',
+    title: 'Minimal',
+    desc: 'Clean and simple. Subtle transitions only, no flashy effects.',
+  },
+  {
+    id: 'moderate',
+    title: 'Moderate',
+    desc: 'Smooth hover effects, gentle transitions, professional feel.',
+  },
+  {
+    id: 'dynamic',
+    title: 'Dynamic',
+    desc: 'Animated backgrounds, scroll effects, eye-catching interactions.',
+  },
+]
+
+const designOptions = [
+  {
+    id: 'minimal',
+    title: 'Clean & Minimal',
+    desc: 'Lots of whitespace, simple layouts, understated elegance.',
+  },
+  {
+    id: 'modern',
+    title: 'Modern & Professional',
+    desc: 'Contemporary design, balanced visuals, trustworthy feel.',
+  },
+  {
+    id: 'bold',
+    title: 'Bold & Creative',
+    desc: 'Strong visuals, unique layouts, makes a statement.',
+  },
+]
+
+const effectOptions = [
+  { id: 'shadows', label: 'Drop Shadows' },
+  { id: 'rounded', label: 'Rounded Corners' },
+  { id: 'gradients', label: 'Gradients' },
+  { id: 'glassmorphism', label: 'Glass Effects' },
+  { id: 'patterns', label: 'Background Patterns' },
+  { id: 'animations', label: 'Floating Elements' },
+]
+
+export default function Step4Style({ formData, updateField, toggleVisualEffect, onBack, onNext }) {
   return (
     <div className="animate-fade-up">
       <ProgressBar step={4} />
@@ -22,35 +68,34 @@ export default function Step4Style({ formData, updateField, onBack, onNext }) {
           value={formData.styleKeywords}
           onChange={(value) => updateField('styleKeywords', value)}
           placeholder="e.g. Clean, professional, trustworthy. Not too flashy. Simple and easy to read. I want it to feel like a local family business, not a big corporation."
-          rows={5}
+          rows={4}
         />
       </FormField>
 
-      <FormField
-        label="Share a website you like the look of"
-        hint="We'll use this as a style reference, not copy it."
-        optional
-      >
-        <TextInput
-          type="url"
-          value={formData.inspo1}
-          onChange={(value) => updateField('inspo1', value)}
-          placeholder="https://example.com"
-        />
-      </FormField>
+      <StyleSelector
+        label="Design Style"
+        options={designOptions}
+        value={formData.designStyle}
+        onChange={(value) => updateField('designStyle', value)}
+      />
 
-      <FormField label="Another website for inspiration" optional>
-        <TextInput
-          type="url"
-          value={formData.inspo2}
-          onChange={(value) => updateField('inspo2', value)}
-          placeholder="https://example.com"
-        />
-      </FormField>
+      <StyleSelector
+        label="Animation Level"
+        options={animationOptions}
+        value={formData.animationLevel}
+        onChange={(value) => updateField('animationLevel', value)}
+      />
+
+      <EffectToggles
+        label="Visual Effects"
+        options={effectOptions}
+        selected={formData.visualEffects}
+        onToggle={toggleVisualEffect}
+      />
 
       <FormField
         label="Colors"
-        hint="Not sure? Leave these as-is and just describe your vibe in the keywords field above — we'll figure it out."
+        hint="Not sure? Leave these as-is and describe your vibe above."
         optional
       >
         <div className="flex flex-col gap-3">
@@ -73,6 +118,28 @@ export default function Step4Style({ formData, updateField, onBack, onNext }) {
             onChange={(value) => updateField('colorBg', value)}
           />
         </div>
+      </FormField>
+
+      <FormField
+        label="Share a website you like the look of"
+        hint="We'll use this as a style reference, not copy it."
+        optional
+      >
+        <TextInput
+          type="url"
+          value={formData.inspo1}
+          onChange={(value) => updateField('inspo1', value)}
+          placeholder="https://example.com"
+        />
+      </FormField>
+
+      <FormField label="Another website for inspiration" optional>
+        <TextInput
+          type="url"
+          value={formData.inspo2}
+          onChange={(value) => updateField('inspo2', value)}
+          placeholder="https://example.com"
+        />
       </FormField>
 
       <NavRow onBack={onBack} onNext={onNext} />

@@ -1,4 +1,6 @@
-import 'dotenv/config'
+// Load env first - must be before other imports
+import './config.js'
+
 import express from 'express'
 import cors from 'cors'
 import submitRoute from './routes/submit.js'

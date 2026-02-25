@@ -162,10 +162,34 @@ export default function BuildPage() {
     const htmlContent = finalCode || streamedCode
     if (!htmlContent) return null
 
+    // Inject script to handle navigation within iframe only
+    const navScript = `
+<script>
+document.addEventListener('click', function(e) {
+  const link = e.target.closest('a');
+  if (link) {
+    const href = link.getAttribute('href');
+    if (href && href.startsWith('#')) {
+      e.preventDefault();
+      const target = document.querySelector(href);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else if (href && !href.startsWith('http') && !href.startsWith('mailto:') && !href.startsWith('tel:')) {
+      e.preventDefault();
+    }
+  }
+});
+</script>
+</body>`
+
+    // Insert navigation script before closing body tag
+    const processedHtml = htmlContent.replace('</body>', navScript)
+
     return (
       <iframe
         ref={iframeRef}
-        srcDoc={htmlContent}
+        srcDoc={processedHtml}
         title="Site Preview"
         className="w-full min-h-[600px] bg-white border-0 rounded-sc"
         sandbox="allow-scripts"

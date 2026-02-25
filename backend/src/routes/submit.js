@@ -45,6 +45,46 @@ router.post(
         services = []
       }
 
+      // Parse visual effects array
+      let visualEffects = []
+      try {
+        visualEffects = JSON.parse(req.body.visualEffects || '[]')
+      } catch {
+        visualEffects = []
+      }
+
+      // Parse sections array
+      let sections = []
+      try {
+        sections = JSON.parse(req.body.sections || '[]')
+      } catch {
+        sections = ['hero', 'services', 'about', 'contact']
+      }
+
+      // Parse include features array
+      let includeFeatures = []
+      try {
+        includeFeatures = JSON.parse(req.body.includeFeatures || '[]')
+      } catch {
+        includeFeatures = []
+      }
+
+      // Parse custom sections array
+      let customSections = []
+      try {
+        customSections = JSON.parse(req.body.customSections || '[]')
+      } catch {
+        customSections = []
+      }
+
+      // Parse custom features array
+      let customFeatures = []
+      try {
+        customFeatures = JSON.parse(req.body.customFeatures || '[]')
+      } catch {
+        customFeatures = []
+      }
+
       // Save submission to database
       const submissionData = {
         id: submissionId,
@@ -66,7 +106,19 @@ router.post(
         color_primary: req.body.colorPrimary || '#1a73e8',
         color_accent: req.body.colorAccent || '#f4a61d',
         color_bg: req.body.colorBg || '#ffffff',
-        structure: req.body.structure || 'standard',
+        animation_level: req.body.animationLevel || 'moderate',
+        design_style: req.body.designStyle || 'modern',
+        visual_effects: visualEffects,
+        sections: sections,
+        custom_sections: customSections,
+        font_pairing: req.body.fontPairing || 'modern',
+        custom_font: req.body.customFont || '',
+        header_style: req.body.headerStyle || 'standard',
+        custom_header_style: req.body.customHeaderStyle || '',
+        hero_style: req.body.heroStyle || 'fullscreen',
+        custom_hero_style: req.body.customHeroStyle || '',
+        include_features: includeFeatures,
+        custom_features: customFeatures,
         extra_notes: req.body.extraNotes || '',
         logo_url: logoUrl,
         photo_urls: photoUrls,
