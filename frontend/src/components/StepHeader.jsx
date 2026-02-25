@@ -1,13 +1,13 @@
 export default function StepHeader({ stepNumber, title, description }) {
   return (
     <div className="mb-10">
-      <div className="text-[11px] font-syne font-bold tracking-[2px] text-accent uppercase mb-2.5">
-        Step {String(stepNumber).padStart(2, '0')}
+      <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/20 rounded-full px-3 py-1 mb-4">
+        <span className="text-accent text-xs font-medium">Step {stepNumber} of 6</span>
       </div>
-      <h1 className="font-syne text-[32px] font-extrabold tracking-tight leading-tight mb-2.5">
+      <h1 className="font-syne text-3xl md:text-4xl font-bold tracking-tight leading-tight mb-3">
         {title}
       </h1>
-      <p className="text-muted text-[15px] leading-relaxed">{description}</p>
+      <p className="text-muted text-base leading-relaxed max-w-lg">{description}</p>
     </div>
   )
 }

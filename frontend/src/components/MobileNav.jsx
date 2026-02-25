@@ -1,6 +1,8 @@
+import { Link } from 'react-router-dom'
+
 const steps = [
   { number: 1, label: 'Business' },
-  { number: 2, label: 'Goal' },
+  { number: 2, label: 'Goals' },
   { number: 3, label: 'Content' },
   { number: 4, label: 'Style' },
   { number: 5, label: 'Structure' },
@@ -11,9 +13,9 @@ export default function MobileNav({ currentStep, onStepClick }) {
   return (
     <div className="md:hidden bg-surface border-b border-border px-4 py-4 sticky top-0 z-50">
       <div className="flex items-center justify-between mb-3">
-        <div className="font-syne font-extrabold text-lg text-accent tracking-tight">
-          site<span className="text-muted font-normal">craft</span>
-        </div>
+        <Link to="/" className="font-syne font-extrabold text-lg text-accent tracking-tight">
+          Bespoke
+        </Link>
         <div className="text-xs text-muted">
           Step {currentStep} of 6
         </div>
@@ -28,7 +30,7 @@ export default function MobileNav({ currentStep, onStepClick }) {
             <button
               key={step.number}
               onClick={() => onStepClick(step.number)}
-              className={`flex-1 h-1 rounded-full transition-all duration-200 ${
+              className={`flex-1 h-1.5 rounded-full transition-all duration-200 ${
                 isActive
                   ? 'bg-accent'
                   : isDone

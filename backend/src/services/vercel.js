@@ -9,7 +9,7 @@ export async function deployToVercel(html, projectName) {
   }
 
   // Generate a unique project name if not provided
-  const name = projectName || `sitecraft-${Date.now()}`
+  const name = projectName || `bespoke-${Date.now()}`
 
   // Create the deployment files
   const files = [

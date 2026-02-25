@@ -3,7 +3,64 @@ import StepHeader from '../StepHeader'
 import FormField, { TextInput, TextArea } from '../FormField'
 import ColorPicker from '../ColorPicker'
 import StyleSelector, { EffectToggles } from '../StyleSelector'
+import FontSelector from '../FontSelector'
 import NavRow from '../NavRow'
+
+const fontOptions = [
+  {
+    id: 'modern',
+    title: 'Modern',
+    desc: 'Clean and highly readable',
+    fontFamily: "'Inter', sans-serif",
+    sampleText: 'The quick brown fox',
+  },
+  {
+    id: 'classic',
+    title: 'Classic',
+    desc: 'Elegant serif headers',
+    fontFamily: "'Playfair Display', serif",
+    bodyFont: "'Lato', sans-serif",
+    sampleText: 'The quick brown fox',
+  },
+  {
+    id: 'bold',
+    title: 'Bold',
+    desc: 'Strong and impactful',
+    fontFamily: "'Oswald', sans-serif",
+    bodyFont: "'Open Sans', sans-serif",
+    sampleText: 'THE QUICK BROWN FOX',
+  },
+  {
+    id: 'friendly',
+    title: 'Friendly',
+    desc: 'Rounded and approachable',
+    fontFamily: "'Nunito', sans-serif",
+    sampleText: 'The quick brown fox',
+  },
+  {
+    id: 'professional',
+    title: 'Professional',
+    desc: 'Business-ready',
+    fontFamily: "'Montserrat', sans-serif",
+    bodyFont: "'Open Sans', sans-serif",
+    sampleText: 'The quick brown fox',
+  },
+  {
+    id: 'elegant',
+    title: 'Elegant',
+    desc: 'Sophisticated',
+    fontFamily: "'Cormorant Garamond', serif",
+    bodyFont: "'Proza Libre', sans-serif",
+    sampleText: 'The quick brown fox',
+  },
+  {
+    id: 'custom',
+    title: 'Custom',
+    desc: 'Use your own Google Fonts',
+    fontFamily: "'DM Sans', sans-serif",
+    sampleText: 'Your custom font',
+  },
+]
 
 const animationOptions = [
   {
@@ -78,6 +135,29 @@ export default function Step4Style({ formData, updateField, toggleVisualEffect, 
         value={formData.designStyle}
         onChange={(value) => updateField('designStyle', value)}
       />
+
+      <FontSelector
+        options={fontOptions}
+        value={formData.fontPairing}
+        onChange={(value) => updateField('fontPairing', value)}
+      />
+      {formData.fontPairing === 'custom' && (
+        <div className="-mt-4 mb-8 space-y-3">
+          <input
+            type="text"
+            value={formData.customFont}
+            onChange={(e) => updateField('customFont', e.target.value)}
+            placeholder="Google Fonts name or URL (e.g., 'Roboto' or 'https://fonts.googleapis.com/css2?family=Roboto')"
+            className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
+          />
+          <p className="text-xs text-muted">
+            Enter a Google Font name, or paste a full Google Fonts embed URL. Browse fonts at{' '}
+            <a href="https://fonts.google.com" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
+              fonts.google.com
+            </a>
+          </p>
+        </div>
+      )}
 
       <StyleSelector
         label="Animation Level"

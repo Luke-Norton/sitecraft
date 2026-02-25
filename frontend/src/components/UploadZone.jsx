@@ -102,7 +102,7 @@ export default function UploadZone({
           onChange={handleChange}
           className="hidden"
         />
-        <div className="text-[28px] mb-2.5">{icon}</div>
+        <div className="text-accent mb-3">{icon}</div>
         <div className="text-[14px] font-medium text-white mb-1">{label}</div>
         <div className="text-xs text-muted">{sublabel}</div>
         {multiple && fileList.length > 0 && (

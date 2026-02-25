@@ -16,44 +16,6 @@ const sectionOptions = [
   { id: 'contact', label: 'Contact' },
 ]
 
-const fontOptions = [
-  {
-    id: 'modern',
-    title: 'Modern',
-    desc: 'Inter — Clean and highly readable',
-  },
-  {
-    id: 'classic',
-    title: 'Classic',
-    desc: 'Playfair Display + Lato — Elegant serif headers',
-  },
-  {
-    id: 'bold',
-    title: 'Bold',
-    desc: 'Oswald + Open Sans — Strong and impactful',
-  },
-  {
-    id: 'friendly',
-    title: 'Friendly',
-    desc: 'Nunito — Rounded and approachable',
-  },
-  {
-    id: 'professional',
-    title: 'Professional',
-    desc: 'Montserrat + Open Sans — Business-ready',
-  },
-  {
-    id: 'elegant',
-    title: 'Elegant',
-    desc: 'Cormorant + Proza Libre — Sophisticated',
-  },
-  {
-    id: 'custom',
-    title: 'Custom',
-    desc: 'Use your own Google Fonts',
-  },
-]
-
 const headerOptions = [
   {
     id: 'standard',
@@ -264,33 +226,6 @@ export default function Step5Structure({
           </div>
         </FormField>
       )}
-
-      {/* Font Pairing */}
-      <div className="mt-8">
-        <StyleSelector
-          label="Font Style"
-          options={fontOptions}
-          value={formData.fontPairing}
-          onChange={(value) => updateField('fontPairing', value)}
-        />
-        {formData.fontPairing === 'custom' && (
-          <div className="mt-3 space-y-3">
-            <input
-              type="text"
-              value={formData.customFont}
-              onChange={(e) => updateField('customFont', e.target.value)}
-              placeholder="Google Fonts name or URL (e.g., 'Roboto' or 'https://fonts.googleapis.com/css2?family=Roboto')"
-              className="w-full bg-surface border border-border rounded-sc px-4 py-3 text-sm text-white placeholder:text-muted focus:outline-none focus:border-accent"
-            />
-            <p className="text-xs text-muted">
-              Enter a Google Font name, or paste a full Google Fonts embed URL. You can browse fonts at{' '}
-              <a href="https://fonts.google.com" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
-                fonts.google.com
-              </a>
-            </p>
-          </div>
-        )}
-      </div>
 
       {/* Header Style */}
       <StyleSelector

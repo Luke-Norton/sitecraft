@@ -173,19 +173,26 @@ export default function IntakeForm() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-bg">
       <MobileNav currentStep={currentStep} onStepClick={goTo} />
 
-      <div className="grid grid-cols-1 md:grid-cols-[260px_1fr]">
+      <div className="flex">
         <Sidebar currentStep={currentStep} onStepClick={goTo} />
 
-        <main className="p-6 md:p-16 max-w-[760px]">
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-sc mb-6 text-sm">
-              {error}
-            </div>
-          )}
-          {renderStep()}
+        <main className="flex-1 min-h-screen">
+          <div className="max-w-2xl mx-auto px-6 py-12 md:py-16">
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl mb-8 text-sm flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                {error}
+              </div>
+            )}
+            {renderStep()}
+          </div>
         </main>
       </div>
     </div>

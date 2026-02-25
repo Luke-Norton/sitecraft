@@ -1,13 +1,22 @@
-# Sitecraft
+# Bespoke
 
-A full-stack web application that guides non-technical users through a structured intake form and uses Claude AI to generate and deploy complete static websites.
+An AI-powered website builder that creates stunning, production-ready websites in minutes. Tell us about your business, choose your style, and watch as AI crafts a website tailored exactly to your needs.
+
+## Features
+
+- **AI-Powered Design**: Claude AI understands your business and creates a website that perfectly matches your brand
+- **Full Customization**: Choose sections, fonts, colors, animations, and layouts
+- **Image Assignment**: Upload photos and assign them to specific sections
+- **Real-Time Generation**: Watch your website come to life with streaming output
+- **Revision Loop**: Describe changes and regenerate instantly
+- **One-Click Deploy**: Deploy to Vercel with a single click
 
 ## Tech Stack
 
 - **Frontend**: React + Vite + Tailwind CSS
 - **Backend**: Node.js + Express
 - **Database + Storage**: Supabase (Postgres + file storage)
-- **AI**: Anthropic Claude API (claude-sonnet-4-6)
+- **AI**: Anthropic Claude API (claude-sonnet-4-20250514)
 - **Deployment**: Vercel API
 
 ## Setup Instructions
@@ -67,7 +76,17 @@ CREATE TABLE submissions (
   animation_level TEXT DEFAULT 'moderate',
   design_style TEXT DEFAULT 'modern',
   visual_effects JSONB DEFAULT '["shadows", "rounded"]',
-  structure TEXT DEFAULT 'standard',
+  sections JSONB DEFAULT '["hero", "services", "about", "contact"]',
+  custom_sections JSONB DEFAULT '[]',
+  font_pairing TEXT DEFAULT 'modern',
+  custom_font TEXT DEFAULT '',
+  header_style TEXT DEFAULT 'standard',
+  custom_header_style TEXT DEFAULT '',
+  hero_style TEXT DEFAULT 'fullscreen',
+  custom_hero_style TEXT DEFAULT '',
+  include_features JSONB DEFAULT '[]',
+  custom_features JSONB DEFAULT '[]',
+  photo_assignments JSONB DEFAULT '{}',
   extra_notes TEXT,
   logo_url TEXT,
   photo_urls JSONB DEFAULT '[]',
@@ -122,10 +141,9 @@ USING (bucket_id = 'assets');
 
 ### 4. Environment Variables
 
-Copy `.env.example` to `.env` in both frontend and backend directories:
+Copy `.env.example` to `.env` in the project root:
 
 ```bash
-# In project root
 cp .env.example .env
 ```
 
@@ -168,63 +186,16 @@ npm run dev
 
 Visit `http://localhost:5173` to use the app.
 
-## Project Structure
+## User Flow
 
-```
-sitecraft/
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── steps/          # Form step components
-│   │   │   ├── Button.jsx
-│   │   │   ├── ColorPicker.jsx
-│   │   │   ├── DynamicList.jsx
-│   │   │   ├── FormField.jsx
-│   │   │   ├── NavRow.jsx
-│   │   │   ├── ProgressBar.jsx
-│   │   │   ├── ReviewSection.jsx
-│   │   │   ├── Sidebar.jsx
-│   │   │   ├── StepHeader.jsx
-│   │   │   ├── StructureCards.jsx
-│   │   │   └── UploadZone.jsx
-│   │   ├── hooks/
-│   │   │   └── useFormState.js
-│   │   ├── lib/
-│   │   │   ├── api.js
-│   │   │   └── supabase.js
-│   │   ├── pages/
-│   │   │   ├── BuildPage.jsx
-│   │   │   └── IntakeForm.jsx
-│   │   ├── styles/
-│   │   │   └── index.css
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   ├── index.html
-│   ├── package.json
-│   ├── postcss.config.js
-│   ├── tailwind.config.js
-│   └── vite.config.js
-│
-├── backend/
-│   ├── src/
-│   │   ├── middleware/
-│   │   │   └── upload.js
-│   │   ├── routes/
-│   │   │   ├── build.js
-│   │   │   ├── deploy.js
-│   │   │   ├── revise.js
-│   │   │   └── submit.js
-│   │   ├── services/
-│   │   │   ├── claude.js
-│   │   │   ├── promptBuilder.js
-│   │   │   ├── supabase.js
-│   │   │   └── vercel.js
-│   │   └── index.js
-│   └── package.json
-│
-├── .env.example
-└── README.md
-```
+1. **Landing Page**: Learn about Bespoke and click "Build Your Site"
+2. **Step 1 - Business**: Enter your business name, description, and location
+3. **Step 2 - Goals**: Define what you want visitors to do
+4. **Step 3 - Content**: Upload logo, photos, services, and contact info
+5. **Step 4 - Style**: Choose colors, animations, and visual effects
+6. **Step 5 - Structure**: Select sections, fonts, layouts, and assign images
+7. **Step 6 - Review**: Review everything and generate your site
+8. **Build Page**: Watch your site generate in real-time, request revisions, deploy
 
 ## API Endpoints
 

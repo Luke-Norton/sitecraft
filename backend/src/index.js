@@ -38,5 +38,5 @@ app.use((err, req, res, next) => {
 })
 
 app.listen(PORT, () => {
-  console.log(`Sitecraft backend running on port ${PORT}`)
+  console.log(`Bespoke backend running on port ${PORT}`)
 })

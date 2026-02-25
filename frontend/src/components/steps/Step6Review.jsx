@@ -158,15 +158,32 @@ export default function Step6Review({ formData, onBack, onSubmit, isSubmitting }
 
       <div className="flex justify-between items-center mt-12 pt-8 border-t border-border">
         <Button variant="ghost" onClick={onBack}>
-          ← Back
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+          Back
         </Button>
         <Button
           variant="primary"
           onClick={onSubmit}
           disabled={isSubmitting}
-          className="px-10"
+          className="px-8"
         >
-          {isSubmitting ? 'Submitting...' : 'Build My Site →'}
+          {isSubmitting ? (
+            <>
+              <svg className="animate-spin" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 12a9 9 0 11-6.219-8.56" />
+              </svg>
+              Building...
+            </>
+          ) : (
+            <>
+              Build My Site
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+              </svg>
+            </>
+          )}
         </Button>
       </div>
     </div>
