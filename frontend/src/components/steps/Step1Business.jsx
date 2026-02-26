@@ -31,7 +31,8 @@ export default function Step1Business({ formData, updateField, onNext }) {
 
       <FormField
         label="Where are you located?"
-        hint='Or type "Online only" if you serve customers remotely.'
+        hint="Leave blank if you're remote or serve customers online."
+        optional
       >
         <TextInput
           value={formData.bizLocation}

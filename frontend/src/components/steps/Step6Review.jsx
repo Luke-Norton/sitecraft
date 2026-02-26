@@ -4,24 +4,27 @@ import ReviewSection from '../ReviewSection'
 import Button from '../Button'
 
 const designStyleLabels = {
-  minimal: 'Clean & Minimal',
-  modern: 'Modern & Professional',
-  bold: 'Bold & Creative',
+  minimal: 'Minimal & Refined',
+  modern: 'Modern Professional',
+  bold: 'Bold & Expressive',
+  playful: 'Playful & Friendly',
+  luxury: 'Luxury & Premium',
 }
 
 const animationLabels = {
-  minimal: 'Minimal',
-  moderate: 'Moderate',
-  dynamic: 'Dynamic',
+  scrollReveal: 'Scroll Reveal',
+  hoverCards: 'Card Hover Effects',
+  hoverButtons: 'Button Hover Effects',
+  heroAnimations: 'Animated Hero',
+  floatingElements: 'Floating Elements',
 }
 
 const effectLabels = {
+  roundedCorners: 'Rounded Corners',
   shadows: 'Drop Shadows',
-  rounded: 'Rounded Corners',
   gradients: 'Gradients',
-  glassmorphism: 'Glass Effects',
-  patterns: 'Background Patterns',
-  animations: 'Floating Elements',
+  glassBlur: 'Glass Blur',
+  decorativeBorders: 'Accent Borders',
 }
 
 const sectionLabels = {
@@ -37,25 +40,30 @@ const sectionLabels = {
 }
 
 const fontLabels = {
-  modern: 'Modern (Inter)',
-  classic: 'Classic (Playfair + Lato)',
-  bold: 'Bold (Oswald + Open Sans)',
-  friendly: 'Friendly (Nunito)',
-  professional: 'Professional (Montserrat)',
-  elegant: 'Elegant (Cormorant)',
+  auto: 'Auto (AI decides)',
+  modern: 'Inter',
+  geometric: 'Plus Jakarta Sans',
+  clean: 'DM Sans',
+  technical: 'Space Grotesk',
+  friendly: 'Outfit',
+  elegant: 'Sora',
+  editorial: 'Fraunces',
+  luxury: 'Cormorant',
 }
 
 const headerLabels = {
-  standard: 'Standard (Logo left)',
-  centered: 'Centered',
+  standard: 'Standard (Glass blur)',
+  centered: 'Centered Floating',
   minimal: 'Minimal',
+  floating: 'Floating Pill',
 }
 
 const heroLabels = {
   fullscreen: 'Full Screen',
-  half: 'Half Screen',
   split: 'Split Layout',
-  simple: 'Simple',
+  minimal: 'Minimal',
+  gradient: 'Gradient',
+  bento: 'Bento Grid',
 }
 
 const featureLabels = {
@@ -65,10 +73,27 @@ const featureLabels = {
   'newsletter': 'Newsletter',
   'map': 'Map',
   'chat-widget': 'Chat Widget',
+  'dark-sections': 'Dark Sections',
+  'testimonial-carousel': 'Testimonial Carousel',
 }
 
 export default function Step6Review({ formData, onBack, onSubmit, isSubmitting }) {
-  const filteredServices = formData.services.filter(Boolean).join(', ')
+  // Get enabled animations
+  const enabledAnimations = Object.entries(formData.animations || {})
+    .filter(([_, enabled]) => enabled)
+    .map(([key]) => animationLabels[key])
+    .join(', ')
+
+  // Get enabled effects
+  const enabledEffects = Object.entries(formData.effects || {})
+    .filter(([_, enabled]) => enabled)
+    .map(([key]) => effectLabels[key])
+    .join(', ')
+
+  // Count sections with content
+  const sectionsWithContent = Object.keys(formData.sectionContent || {}).filter(
+    key => formData.sectionContent[key]?.trim()
+  ).length
 
   return (
     <div className="animate-fade-up">
@@ -84,7 +109,7 @@ export default function Step6Review({ formData, onBack, onSubmit, isSubmitting }
         rows={[
           ['Name', formData.bizName],
           ['Description', formData.bizDesc],
-          ['Location', formData.bizLocation],
+          ['Location', formData.bizLocation || 'Remote / Online'],
         ]}
       />
 
@@ -94,52 +119,42 @@ export default function Step6Review({ formData, onBack, onSubmit, isSubmitting }
       />
 
       <ReviewSection
-        title="Content"
+        title="Assets & Contact"
         rows={[
-          ['About', formData.bizAbout],
-          ['Services', filteredServices],
+          ['Logo', formData.logoFile?.name || 'None (will use text)'],
+          ['Photos', formData.photoFiles.length > 0 ? `${formData.photoFiles.length} photo(s)` : 'None'],
           ['Phone', formData.phone],
           ['Email', formData.email],
           ['Address', formData.address],
           ['Facebook', formData.facebook],
           ['Instagram', formData.instagram],
           ['Other link', formData.otherSocial],
-          ['Logo', formData.logoFile?.name || null],
-          ['Photos', formData.photoFiles.length > 0 ? `${formData.photoFiles.length} photo(s)` : null],
-          ['Photo assignments', formData.photoFiles.length > 0 && Object.keys(formData.photoAssignments || {}).length > 0
-            ? Object.entries(formData.photoAssignments)
-                .filter(([_, section]) => section)
-                .map(([idx, section]) => `${formData.photoFiles[idx]?.name?.slice(0, 15)}... → ${section}`)
-                .join(', ') || 'All auto-assigned'
-            : formData.photoFiles.length > 0 ? 'All auto-assigned' : null],
         ]}
       />
 
       <ReviewSection
         title="Design"
         rows={[
-          ['Style keywords', formData.styleKeywords],
           ['Design style', designStyleLabels[formData.designStyle]],
-          ['Animations', animationLabels[formData.animationLevel]],
-          ['Effects', formData.visualEffects?.map(e => effectLabels[e]).join(', ')],
+          ['Font', formData.fontPairing === 'custom'
+            ? `Custom: ${formData.customFont || '(not specified)'}`
+            : fontLabels[formData.fontPairing]],
+          ['Animations', enabledAnimations || 'None'],
+          ['Effects', enabledEffects || 'None'],
           ['Primary color', formData.colorPrimary],
           ['Accent color', formData.colorAccent],
           ['Background', formData.colorBg],
-          ['Inspiration 1', formData.inspo1],
-          ['Inspiration 2', formData.inspo2],
         ]}
       />
 
       <ReviewSection
         title="Structure"
         rows={[
-          ['Sections', formData.sections?.map(s => sectionLabels[s]).join(', ')],
+          ['Sections', formData.sections?.map(s => sectionLabels[s] || s).join(', ')],
+          ['Section content', sectionsWithContent > 0 ? `${sectionsWithContent} section(s) with custom content` : 'AI will generate content'],
           ['Custom sections', formData.customSections?.filter(s => s.name).length > 0
             ? formData.customSections.filter(s => s.name).map(s => s.name).join(', ')
             : null],
-          ['Font', formData.fontPairing === 'custom'
-            ? `Custom: ${formData.customFont || '(not specified)'}`
-            : fontLabels[formData.fontPairing]],
           ['Header', formData.headerStyle === 'custom'
             ? `Custom: ${formData.customHeaderStyle || '(not specified)'}`
             : headerLabels[formData.headerStyle]],
@@ -147,7 +162,7 @@ export default function Step6Review({ formData, onBack, onSubmit, isSubmitting }
             ? `Custom: ${formData.customHeroStyle || '(not specified)'}`
             : heroLabels[formData.heroStyle]],
           ['Features', formData.includeFeatures?.length > 0
-            ? formData.includeFeatures.map(f => featureLabels[f]).join(', ')
+            ? formData.includeFeatures.map(f => featureLabels[f] || f).join(', ')
             : null],
           ['Custom features', formData.customFeatures?.filter(Boolean).length > 0
             ? formData.customFeatures.filter(Boolean).join(', ')

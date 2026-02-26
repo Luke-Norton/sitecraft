@@ -1,16 +1,12 @@
 import ProgressBar from '../ProgressBar'
 import StepHeader from '../StepHeader'
-import FormField, { TextInput, TextArea } from '../FormField'
+import FormField, { TextInput } from '../FormField'
 import UploadZone from '../UploadZone'
-import DynamicList from '../DynamicList'
 import NavRow from '../NavRow'
 
 export default function Step3Content({
   formData,
   updateField,
-  addService,
-  updateService,
-  removeService,
   setLogoFile,
   setPhotoFiles,
   onBack,
@@ -21,8 +17,8 @@ export default function Step3Content({
       <ProgressBar step={3} />
       <StepHeader
         stepNumber={3}
-        title="Your Content"
-        description="This is the raw material your site is built from. The more you give, the better it'll be."
+        title="Your Assets"
+        description="Upload your brand assets and add your contact details."
       />
 
       <FormField label="Upload your logo" optional>
@@ -57,30 +53,7 @@ export default function Step3Content({
         />
       </FormField>
 
-      <FormField
-        label="Tell us about your business in a few sentences"
-        hint='This will appear as your "About" section. Write it in your own voice.'
-      >
-        <TextArea
-          value={formData.bizAbout}
-          onChange={(value) => updateField('bizAbout', value)}
-          placeholder="e.g. We've been serving the Baton Rouge area since 2010. Family owned and operated, we take pride in showing up on time and doing the job right the first time. No job is too big or too small."
-          rows={5}
-        />
-      </FormField>
-
-      <FormField label="What are your main services or products?">
-        <DynamicList
-          items={formData.services}
-          onAdd={addService}
-          onUpdate={updateService}
-          onRemove={removeService}
-          placeholder="e.g. Lawn mowing"
-          addLabel="+ Add another service"
-        />
-      </FormField>
-
-      <FormField label="Contact info">
+      <FormField label="Contact info" optional>
         <div className="flex flex-col gap-2.5">
           <TextInput
             type="tel"
@@ -120,7 +93,7 @@ export default function Step3Content({
             type="url"
             value={formData.otherSocial}
             onChange={(value) => updateField('otherSocial', value)}
-            placeholder="Any other link"
+            placeholder="Any other link (LinkedIn, Twitter, TikTok, etc.)"
           />
         </div>
       </FormField>

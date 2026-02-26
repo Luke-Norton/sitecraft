@@ -37,20 +37,20 @@ router.post(
         }
       }
 
-      // Parse services array
-      let services = []
+      // Parse animations object
+      let animations = {}
       try {
-        services = JSON.parse(req.body.services || '[]')
+        animations = JSON.parse(req.body.animations || '{}')
       } catch {
-        services = []
+        animations = {}
       }
 
-      // Parse visual effects array
-      let visualEffects = []
+      // Parse effects object
+      let effects = {}
       try {
-        visualEffects = JSON.parse(req.body.visualEffects || '[]')
+        effects = JSON.parse(req.body.effects || '{}')
       } catch {
-        visualEffects = []
+        effects = {}
       }
 
       // Parse sections array
@@ -59,6 +59,14 @@ router.post(
         sections = JSON.parse(req.body.sections || '[]')
       } catch {
         sections = ['hero', 'services', 'about', 'contact']
+      }
+
+      // Parse section content object
+      let sectionContent = {}
+      try {
+        sectionContent = JSON.parse(req.body.sectionContent || '{}')
+      } catch {
+        sectionContent = {}
       }
 
       // Parse include features array
@@ -100,30 +108,26 @@ router.post(
         biz_desc: req.body.bizDesc || '',
         biz_location: req.body.bizLocation || '',
         site_goal: req.body.siteGoal || '',
-        biz_about: req.body.bizAbout || '',
-        services,
         phone: req.body.phone || '',
         email: req.body.email || '',
         address: req.body.address || '',
         facebook: req.body.facebook || '',
         instagram: req.body.instagram || '',
         other_social: req.body.otherSocial || '',
-        style_keywords: req.body.styleKeywords || '',
-        inspo_1: req.body.inspo1 || '',
-        inspo_2: req.body.inspo2 || '',
-        color_primary: req.body.colorPrimary || '#1a73e8',
-        color_accent: req.body.colorAccent || '#f4a61d',
+        color_primary: req.body.colorPrimary || '#6366f1',
+        color_accent: req.body.colorAccent || '#f59e0b',
         color_bg: req.body.colorBg || '#ffffff',
-        animation_level: req.body.animationLevel || 'moderate',
         design_style: req.body.designStyle || 'modern',
-        visual_effects: visualEffects,
-        sections: sections,
-        custom_sections: customSections,
-        font_pairing: req.body.fontPairing || 'modern',
+        font_pairing: req.body.fontPairing || 'auto',
         custom_font: req.body.customFont || '',
+        animations: animations,
+        effects: effects,
+        sections: sections,
+        section_content: sectionContent,
+        custom_sections: customSections,
         header_style: req.body.headerStyle || 'standard',
         custom_header_style: req.body.customHeaderStyle || '',
-        hero_style: req.body.heroStyle || 'fullscreen',
+        hero_style: req.body.heroStyle || 'split',
         custom_hero_style: req.body.customHeroStyle || '',
         include_features: includeFeatures,
         custom_features: customFeatures,

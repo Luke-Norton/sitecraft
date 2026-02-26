@@ -9,12 +9,10 @@ const initialState = {
   // Step 2 - Goal
   siteGoal: '',
 
-  // Step 3 - Content
+  // Step 3 - Assets
   logoFile: null,
   photoFiles: [],
   photoAssignments: {}, // { [photoIndex]: sectionId }
-  bizAbout: '',
-  services: [''],
   phone: '',
   email: '',
   address: '',
@@ -23,27 +21,41 @@ const initialState = {
   otherSocial: '',
 
   // Step 4 - Style
-  styleKeywords: '',
-  inspo1: '',
-  inspo2: '',
-  colorPrimary: '#1a73e8',
-  colorAccent: '#f4a61d',
-  colorBg: '#ffffff',
-  animationLevel: 'moderate',
   designStyle: 'modern',
-  visualEffects: ['shadows', 'rounded'],
+  fontPairing: 'auto', // 'auto' = let AI decide
+  customFont: '',
+  colorPrimary: '#6366f1',
+  colorAccent: '#f59e0b',
+  colorBg: '#ffffff',
+
+  // Granular animation controls
+  animations: {
+    scrollReveal: true,      // Elements fade in as you scroll
+    hoverCards: true,        // Cards lift/scale on hover
+    hoverButtons: true,      // Buttons scale/glow on hover
+    heroAnimations: false,   // Animated hero background/elements
+    floatingElements: false, // Decorative floating shapes
+  },
+
+  // Granular visual effect controls
+  effects: {
+    roundedCorners: true,    // Rounded corners on cards, buttons, images
+    shadows: true,           // Drop shadows on cards and elements
+    gradients: false,        // Gradient backgrounds and buttons
+    glassBlur: false,        // Glass/blur effect on navigation
+    decorativeBorders: false, // Accent borders and dividers
+  },
 
   // Step 5 - Structure
   sections: ['hero', 'services', 'about', 'contact'],
+  sectionContent: {}, // { [sectionId]: "free-form content description" }
   customSections: [], // Array of { name, description }
-  fontPairing: 'modern',
-  customFont: '', // Custom Google Fonts URL or font name
   headerStyle: 'standard',
-  customHeaderStyle: '', // Custom header description
-  heroStyle: 'fullscreen',
-  customHeroStyle: '', // Custom hero description
+  customHeaderStyle: '',
+  heroStyle: 'split',
+  customHeroStyle: '',
   includeFeatures: [],
-  customFeatures: [], // Array of custom feature descriptions
+  customFeatures: [],
   extraNotes: '',
 }
 
@@ -52,27 +64,6 @@ export function useFormState() {
 
   const updateField = useCallback((field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }))
-  }, [])
-
-  const addService = useCallback(() => {
-    setFormData(prev => ({
-      ...prev,
-      services: [...prev.services, ''],
-    }))
-  }, [])
-
-  const updateService = useCallback((index, value) => {
-    setFormData(prev => ({
-      ...prev,
-      services: prev.services.map((s, i) => (i === index ? value : s)),
-    }))
-  }, [])
-
-  const removeService = useCallback((index) => {
-    setFormData(prev => ({
-      ...prev,
-      services: prev.services.filter((_, i) => i !== index),
-    }))
   }, [])
 
   const setLogoFile = useCallback((file) => {
@@ -100,12 +91,33 @@ export function useFormState() {
     }))
   }, [])
 
-  const toggleVisualEffect = useCallback((effect) => {
+  const toggleAnimation = useCallback((key) => {
     setFormData(prev => ({
       ...prev,
-      visualEffects: prev.visualEffects.includes(effect)
-        ? prev.visualEffects.filter(e => e !== effect)
-        : [...prev.visualEffects, effect],
+      animations: {
+        ...prev.animations,
+        [key]: !prev.animations[key],
+      },
+    }))
+  }, [])
+
+  const toggleEffect = useCallback((key) => {
+    setFormData(prev => ({
+      ...prev,
+      effects: {
+        ...prev.effects,
+        [key]: !prev.effects[key],
+      },
+    }))
+  }, [])
+
+  const updateSectionContent = useCallback((sectionId, content) => {
+    setFormData(prev => ({
+      ...prev,
+      sectionContent: {
+        ...prev.sectionContent,
+        [sectionId]: content,
+      },
     }))
   }, [])
 
@@ -180,13 +192,12 @@ export function useFormState() {
   return {
     formData,
     updateField,
-    addService,
-    updateService,
-    removeService,
     setLogoFile,
     setPhotoFiles,
     assignPhotoToSection,
-    toggleVisualEffect,
+    toggleAnimation,
+    toggleEffect,
+    updateSectionContent,
     toggleSection,
     toggleFeature,
     addCustomSection,

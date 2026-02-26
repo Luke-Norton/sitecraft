@@ -5,32 +5,37 @@ import StyleSelector from '../StyleSelector'
 import NavRow from '../NavRow'
 
 const sectionOptions = [
-  { id: 'hero', label: 'Hero / Header', required: true },
-  { id: 'services', label: 'Services' },
-  { id: 'about', label: 'About Us' },
-  { id: 'gallery', label: 'Gallery / Portfolio' },
-  { id: 'testimonials', label: 'Testimonials' },
-  { id: 'team', label: 'Team Members' },
-  { id: 'pricing', label: 'Pricing' },
-  { id: 'faq', label: 'FAQ' },
-  { id: 'contact', label: 'Contact' },
+  { id: 'hero', label: 'Hero / Header', required: true, placeholder: 'e.g., Main headline: "Transform Your Space". Subheadline: "Professional landscaping services for homes and businesses". CTA: "Get a Free Quote"' },
+  { id: 'services', label: 'Services', placeholder: 'e.g., Lawn Mowing - Weekly maintenance, Tree Trimming - Keep your trees healthy, Seasonal Cleanup - Spring and fall services' },
+  { id: 'about', label: 'About Us', placeholder: 'e.g., Family-owned since 2010, serving the Baton Rouge area. We take pride in quality work and customer satisfaction.' },
+  { id: 'gallery', label: 'Gallery / Portfolio', placeholder: 'e.g., Before/after photos of recent projects, showcase our best work' },
+  { id: 'testimonials', label: 'Testimonials', placeholder: 'e.g., "Best landscaping company in town!" - John D. | "They transformed our backyard completely" - Sarah M.' },
+  { id: 'team', label: 'Team Members', placeholder: 'e.g., John Smith - Owner/Operator, Mike Johnson - Lead Technician, Sarah Williams - Office Manager' },
+  { id: 'pricing', label: 'Pricing', placeholder: 'e.g., Basic Package $99/mo - lawn care only, Premium $199/mo - includes trimming, Full Service $299/mo - everything included' },
+  { id: 'faq', label: 'FAQ', placeholder: 'e.g., Q: Do you offer free estimates? A: Yes! | Q: What areas do you serve? A: All of East Baton Rouge Parish' },
+  { id: 'contact', label: 'Contact', placeholder: 'e.g., Include contact form, phone number prominently displayed, business hours: Mon-Fri 8am-6pm' },
 ]
 
 const headerOptions = [
   {
     id: 'standard',
     title: 'Standard',
-    desc: 'Logo left, navigation right',
+    desc: 'Sticky header with glass blur effect',
   },
   {
     id: 'centered',
     title: 'Centered',
-    desc: 'Logo centered above navigation',
+    desc: 'Floating glass header, centered nav',
   },
   {
     id: 'minimal',
     title: 'Minimal',
-    desc: 'Clean and simple, less prominent',
+    desc: 'Transparent, appears on scroll',
+  },
+  {
+    id: 'floating',
+    title: 'Floating Pill',
+    desc: 'Modern SaaS-style floating nav bar',
   },
   {
     id: 'custom',
@@ -43,22 +48,27 @@ const heroOptions = [
   {
     id: 'fullscreen',
     title: 'Full Screen',
-    desc: 'Hero takes up the entire viewport',
-  },
-  {
-    id: 'half',
-    title: 'Half Screen',
-    desc: 'Shorter hero, content visible above fold',
+    desc: 'Bold full-viewport hero with large text',
   },
   {
     id: 'split',
     title: 'Split Layout',
-    desc: 'Text on one side, image on the other',
+    desc: 'Two columns: text left, image right',
   },
   {
-    id: 'simple',
-    title: 'Simple',
-    desc: 'Text-focused, minimal hero section',
+    id: 'minimal',
+    title: 'Minimal',
+    desc: 'Clean, centered, typography-focused',
+  },
+  {
+    id: 'gradient',
+    title: 'Gradient',
+    desc: 'Animated gradient or mesh background',
+  },
+  {
+    id: 'bento',
+    title: 'Bento Grid',
+    desc: 'Hero integrated with feature cards below',
   },
   {
     id: 'custom',
@@ -68,12 +78,14 @@ const heroOptions = [
 ]
 
 const featureOptions = [
-  { id: 'cta-sticky', label: 'Sticky CTA Button' },
-  { id: 'back-to-top', label: 'Back to Top Button' },
+  { id: 'cta-sticky', label: 'Sticky CTA' },
+  { id: 'back-to-top', label: 'Back to Top' },
   { id: 'social-float', label: 'Floating Social Icons' },
   { id: 'newsletter', label: 'Newsletter Signup' },
   { id: 'map', label: 'Embedded Map' },
-  { id: 'chat-widget', label: 'Chat Widget Placeholder' },
+  { id: 'chat-widget', label: 'Chat Widget' },
+  { id: 'dark-sections', label: 'Dark Sections' },
+  { id: 'testimonial-carousel', label: 'Testimonial Carousel' },
 ]
 
 // Get section label for display
@@ -97,6 +109,7 @@ export default function Step5Structure({
   updateCustomFeature,
   removeCustomFeature,
   assignPhotoToSection,
+  updateSectionContent,
   onBack,
   onNext,
 }) {
@@ -144,7 +157,7 @@ export default function Step5Structure({
       </FormField>
 
       {/* Custom Sections */}
-      <div className="mt-4">
+      <div className="mt-4 mb-8">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm text-muted">Custom Sections</span>
           <button
@@ -183,6 +196,48 @@ export default function Step5Structure({
           </div>
         ))}
       </div>
+
+      {/* Section Content */}
+      <FormField
+        label="What content goes in each section?"
+        hint="Describe the content you want in each section. Be specific — include actual text, services, prices, testimonials, etc."
+      >
+        <div className="space-y-4">
+          {formData.sections.map((sectionId) => {
+            const section = sectionOptions.find(s => s.id === sectionId)
+            if (!section) return null
+            return (
+              <div key={sectionId} className="bg-surface border border-border rounded-xl p-4">
+                <label className="block text-sm font-medium text-white mb-2">
+                  {section.label}
+                </label>
+                <textarea
+                  value={formData.sectionContent[sectionId] || ''}
+                  onChange={(e) => updateSectionContent(sectionId, e.target.value)}
+                  placeholder={section.placeholder}
+                  rows={3}
+                  className="w-full bg-[#1a1a1a] border border-border rounded-lg px-4 py-3 text-sm text-white placeholder:text-muted focus:outline-none focus:border-accent resize-none"
+                />
+              </div>
+            )
+          })}
+          {formData.customSections.filter(s => s.name).map((section, index) => (
+            <div key={`custom-${index}`} className="bg-surface border border-border rounded-xl p-4">
+              <label className="block text-sm font-medium text-white mb-2">
+                {section.name}
+                <span className="ml-2 text-xs text-muted">(Custom)</span>
+              </label>
+              <textarea
+                value={formData.sectionContent[section.name] || ''}
+                onChange={(e) => updateSectionContent(section.name, e.target.value)}
+                placeholder={`Describe what content should appear in your ${section.name} section...`}
+                rows={3}
+                className="w-full bg-[#1a1a1a] border border-border rounded-lg px-4 py-3 text-sm text-white placeholder:text-muted focus:outline-none focus:border-accent resize-none"
+              />
+            </div>
+          ))}
+        </div>
+      </FormField>
 
       {/* Image Assignment */}
       {formData.photoFiles.length > 0 && (

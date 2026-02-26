@@ -22,13 +22,12 @@ export default function IntakeForm() {
   const {
     formData,
     updateField,
-    addService,
-    updateService,
-    removeService,
     setLogoFile,
     setPhotoFiles,
     assignPhotoToSection,
-    toggleVisualEffect,
+    toggleAnimation,
+    toggleEffect,
+    updateSectionContent,
     toggleSection,
     toggleFeature,
     addCustomSection,
@@ -57,27 +56,23 @@ export default function IntakeForm() {
       data.append('bizDesc', formData.bizDesc)
       data.append('bizLocation', formData.bizLocation)
       data.append('siteGoal', formData.siteGoal)
-      data.append('bizAbout', formData.bizAbout)
-      data.append('services', JSON.stringify(formData.services.filter(Boolean)))
       data.append('phone', formData.phone)
       data.append('email', formData.email)
       data.append('address', formData.address)
       data.append('facebook', formData.facebook)
       data.append('instagram', formData.instagram)
       data.append('otherSocial', formData.otherSocial)
-      data.append('styleKeywords', formData.styleKeywords)
-      data.append('inspo1', formData.inspo1)
-      data.append('inspo2', formData.inspo2)
       data.append('colorPrimary', formData.colorPrimary)
       data.append('colorAccent', formData.colorAccent)
       data.append('colorBg', formData.colorBg)
-      data.append('animationLevel', formData.animationLevel)
       data.append('designStyle', formData.designStyle)
-      data.append('visualEffects', JSON.stringify(formData.visualEffects))
-      data.append('sections', JSON.stringify(formData.sections))
-      data.append('customSections', JSON.stringify(formData.customSections.filter(s => s.name)))
       data.append('fontPairing', formData.fontPairing)
       data.append('customFont', formData.customFont)
+      data.append('animations', JSON.stringify(formData.animations))
+      data.append('effects', JSON.stringify(formData.effects))
+      data.append('sections', JSON.stringify(formData.sections))
+      data.append('sectionContent', JSON.stringify(formData.sectionContent))
+      data.append('customSections', JSON.stringify(formData.customSections.filter(s => s.name)))
       data.append('headerStyle', formData.headerStyle)
       data.append('customHeaderStyle', formData.customHeaderStyle)
       data.append('heroStyle', formData.heroStyle)
@@ -123,9 +118,6 @@ export default function IntakeForm() {
         return (
           <Step3Content
             {...commonProps}
-            addService={addService}
-            updateService={updateService}
-            removeService={removeService}
             setLogoFile={setLogoFile}
             setPhotoFiles={setPhotoFiles}
             onBack={() => goTo(2)}
@@ -136,7 +128,8 @@ export default function IntakeForm() {
         return (
           <Step4Style
             {...commonProps}
-            toggleVisualEffect={toggleVisualEffect}
+            toggleAnimation={toggleAnimation}
+            toggleEffect={toggleEffect}
             onBack={() => goTo(3)}
             onNext={() => goTo(5)}
           />
@@ -154,6 +147,7 @@ export default function IntakeForm() {
             updateCustomFeature={updateCustomFeature}
             removeCustomFeature={removeCustomFeature}
             assignPhotoToSection={assignPhotoToSection}
+            updateSectionContent={updateSectionContent}
             onBack={() => goTo(4)}
             onNext={() => goTo(6)}
           />
