@@ -2,23 +2,11 @@ import { useState } from 'react'
 
 // Structured content editors for each section type
 
-function HeroEditor({ content, onChange, onAIHelp }) {
+function HeroEditor({ content, onChange }) {
   return (
     <div className="space-y-4">
       <div>
-        <div className="flex items-center justify-between mb-1">
-          <label className="text-sm font-medium text-white">Main Headline</label>
-          <button
-            type="button"
-            onClick={() => onAIHelp('hero', 'headline')}
-            className="text-xs text-accent hover:text-accent/80 flex items-center gap-1"
-          >
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-            Help me write
-          </button>
-        </div>
+        <label className="text-sm font-medium text-white mb-1 block">Main Headline</label>
         <input
           type="text"
           value={content.headline || ''}
