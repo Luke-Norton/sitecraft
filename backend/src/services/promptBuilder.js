@@ -113,6 +113,69 @@ const featureDescriptions = {
   'testimonial-carousel': 'Testimonial carousel: CSS-only horizontal scroll with snap-x snap-mandatory. Cards with snap-center.',
 }
 
+// Tone/voice descriptions for copy
+const toneDescriptions = {
+  professional: `PROFESSIONAL TONE: Clear, confident, trustworthy. Use active voice, specific language. Avoid jargon unless industry-appropriate. Example: "We deliver exceptional results for businesses like yours."`,
+  friendly: `FRIENDLY TONE: Warm, approachable, conversational. Use "you" and "we" frequently. Short sentences, relatable language. Example: "Hey, we're here to help you succeed!"`,
+  bold: `BOLD TONE: Direct, powerful, confident. Strong statements, action-oriented. Shorter punchy sentences. Example: "Transform your business. Start today."`,
+  playful: `PLAYFUL TONE: Fun, energetic, light-hearted. Can use humor, creative phrases. Engaging and memorable. Example: "Ready to make some magic happen?"`,
+  luxurious: `LUXURIOUS TONE: Elegant, refined, exclusive. Sophisticated vocabulary, measured pace. Creates sense of prestige. Example: "Experience the art of exceptional service."`,
+}
+
+// Section variant descriptions
+const sectionVariantDescriptions = {
+  hero: {
+    fullscreen: 'Full viewport hero (min-h-screen) with centered content',
+    split: 'Two-column layout with text left, image right',
+    minimal: 'Clean centered hero with generous padding, typography-focused',
+    video: 'Hero with video background or embedded video',
+  },
+  services: {
+    grid: 'Standard 3-column grid of service cards',
+    bento: 'Bento-style grid with varied card sizes (col-span-2, row-span-2)',
+    list: 'Vertical list layout with icon + text for each service',
+    carousel: 'Horizontal scroll carousel of service cards',
+  },
+  about: {
+    split: 'Two-column: image on one side, text on other',
+    centered: 'Centered text with optional image above or below',
+    timeline: 'Timeline style showing company milestones',
+    stats: 'Include prominent statistics/numbers',
+  },
+  testimonials: {
+    grid: 'Grid of testimonial cards',
+    carousel: 'Horizontal scroll carousel',
+    featured: 'Large featured testimonial with smaller supporting ones',
+    minimal: 'Simple quotes with minimal styling',
+  },
+  gallery: {
+    masonry: 'Masonry/Pinterest-style grid',
+    grid: 'Even grid layout',
+    carousel: 'Horizontal scroll gallery',
+    lightbox: 'Clickable images that open in lightbox',
+  },
+  pricing: {
+    cards: 'Side-by-side pricing cards',
+    table: 'Comparison table format',
+    toggle: 'Monthly/yearly toggle pricing',
+  },
+  team: {
+    grid: 'Grid of team member cards',
+    featured: 'Larger featured members with smaller supporting',
+    minimal: 'Simple list with photos and names',
+  },
+  faq: {
+    accordion: 'Expandable accordion questions',
+    grid: 'Two-column grid of Q&As',
+    simple: 'Simple list of questions and answers',
+  },
+  contact: {
+    split: 'Form on one side, contact info on other',
+    centered: 'Centered form with info above or below',
+    map: 'Include map embed',
+  },
+}
+
 const designStyleDescriptions = {
   minimal: `MINIMAL & REFINED DESIGN (Apple/Linear inspired):
 - Generous whitespace: py-24 md:py-32 between sections
@@ -265,10 +328,13 @@ export function buildPrompt(submission) {
   const lines = []
 
   // Get user preferences with defaults
+  const tone = d.tone || 'professional'
   const designStyle = d.design_style || 'modern'
   const animations = d.animations || { scrollReveal: true, hoverCards: true, hoverButtons: true }
   const effects = d.effects || { roundedCorners: true, shadows: true }
-  const sections = d.sections || ['hero', 'services', 'about', 'contact']
+  const sections = d.sections || ['hero']
+  const sectionOrder = d.section_order || sections
+  const sectionVariants = d.section_variants || {}
   const sectionContent = d.section_content || {}
   const headerStyle = d.header_style || 'standard'
   const heroStyle = d.hero_style || 'split'
@@ -402,16 +468,81 @@ Typography scale (use these):
 - Body: text-base md:text-lg text-gray-600
 - Small/labels: text-sm text-gray-500`)
 
-  lines.push(`\n## SECTIONS TO INCLUDE (in this order)`)
-  sections.forEach(section => {
+  lines.push(`\n## TONE & VOICE`)
+  lines.push(toneDescriptions[tone] || toneDescriptions.professional)
+  lines.push(`Apply this tone consistently to all headlines, body copy, button text, and calls-to-action.`)
+
+  lines.push(`\n## SECTIONS TO INCLUDE (in this exact order)`)
+  // Use sectionOrder for correct ordering, filtered by what's actually selected
+  const orderedSections = sectionOrder.filter(s => sections.includes(s))
+  orderedSections.forEach(section => {
     const desc = sectionDescriptions[section] || ''
+    const variant = sectionVariants[section]
     const content = sectionContent[section]
+
     lines.push(`\n### ${section.toUpperCase()}`)
-    if (desc) lines.push(`Style: ${desc}`)
-    if (content) {
-      lines.push(`Content: ${content}`)
-    } else {
-      lines.push(`Content: Generate appropriate placeholder content based on the business description.`)
+    if (desc) lines.push(`Base Style: ${desc}`)
+
+    // Add variant instructions if specified
+    if (variant && sectionVariantDescriptions[section]?.[variant]) {
+      lines.push(`Layout Variant: ${sectionVariantDescriptions[section][variant]}`)
+    }
+
+    // Handle structured content
+    if (content && typeof content === 'object') {
+      lines.push(`Content Details:`)
+
+      if (section === 'hero') {
+        if (content.headline) lines.push(`  - Headline: "${content.headline}"`)
+        if (content.subheadline) lines.push(`  - Subheadline: "${content.subheadline}"`)
+        if (content.cta) lines.push(`  - CTA Button: "${content.cta}"`)
+      } else if (section === 'services' && content.items?.length > 0) {
+        lines.push(`  Services to include:`)
+        content.items.forEach((item, i) => {
+          if (item.name) lines.push(`    ${i + 1}. ${item.name}${item.description ? `: ${item.description}` : ''}`)
+        })
+      } else if (section === 'about') {
+        if (content.story) lines.push(`  - Story: "${content.story}"`)
+        if (content.founded) lines.push(`  - Founded: ${content.founded}`)
+        if (content.audience) lines.push(`  - Target Audience: ${content.audience}`)
+        if (content.difference) lines.push(`  - Differentiator: "${content.difference}"`)
+      } else if (section === 'testimonials' && content.items?.length > 0) {
+        lines.push(`  Testimonials to include:`)
+        content.items.forEach((item, i) => {
+          if (item.quote) lines.push(`    ${i + 1}. "${item.quote}" - ${item.name || 'Customer'}${item.role ? `, ${item.role}` : ''}`)
+        })
+      } else if (section === 'pricing' && content.items?.length > 0) {
+        lines.push(`  Pricing plans:`)
+        content.items.forEach((item, i) => {
+          if (item.name) {
+            lines.push(`    ${i + 1}. ${item.name} - ${item.price || 'Custom'}${item.featured ? ' [FEATURED]' : ''}`)
+            if (item.features) lines.push(`       Features: ${item.features}`)
+          }
+        })
+      } else if (section === 'faq' && content.items?.length > 0) {
+        lines.push(`  FAQs:`)
+        content.items.forEach((item, i) => {
+          if (item.question) lines.push(`    Q${i + 1}: ${item.question}`)
+          if (item.answer) lines.push(`    A${i + 1}: ${item.answer}`)
+        })
+      } else if (section === 'team' && content.items?.length > 0) {
+        lines.push(`  Team members:`)
+        content.items.forEach((item, i) => {
+          if (item.name) lines.push(`    ${i + 1}. ${item.name}${item.role ? ` - ${item.role}` : ''}${item.bio ? ` (${item.bio})` : ''}`)
+        })
+      } else if (section === 'contact') {
+        if (content.heading) lines.push(`  - Heading: "${content.heading}"`)
+        if (content.subheading) lines.push(`  - Subheading: "${content.subheading}"`)
+        lines.push(`  - Include contact form: ${content.showForm !== false ? 'Yes' : 'No'}`)
+        lines.push(`  - Include map: ${content.showMap ? 'Yes' : 'No'}`)
+      } else if (section === 'gallery') {
+        if (content.description) lines.push(`  - Description: "${content.description}"`)
+      }
+    }
+
+    // If no content provided, tell AI to generate
+    if (!content || (typeof content === 'object' && Object.values(content).every(v => !v || (Array.isArray(v) && v.length === 0)))) {
+      lines.push(`  (Generate appropriate placeholder content based on the business description)`)
     }
   })
 

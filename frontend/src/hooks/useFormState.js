@@ -8,11 +8,14 @@ const initialState = {
 
   // Step 2 - Goal
   siteGoal: '',
+  inspirationUrl: '', // URL of a website they like
+  inspirationAnalysis: null, // AI analysis of the URL
 
   // Step 3 - Assets
   logoFile: null,
   photoFiles: [],
   photoAssignments: {}, // { [photoIndex]: sectionId }
+  extractedColors: null, // Colors extracted from logo
   phone: '',
   email: '',
   address: '',
@@ -21,35 +24,52 @@ const initialState = {
   otherSocial: '',
 
   // Step 4 - Style
+  tone: 'professional', // professional, friendly, bold, playful, luxurious
   designStyle: 'modern',
-  fontPairing: 'auto', // 'auto' = let AI decide
+  fontPairing: 'auto',
   customFont: '',
   colorPrimary: '#6366f1',
   colorAccent: '#f59e0b',
   colorBg: '#ffffff',
+  colorsFromLogo: false, // Whether to use extracted colors
 
   // Granular animation controls
   animations: {
-    scrollReveal: true,      // Elements fade in as you scroll
-    hoverCards: true,        // Cards lift/scale on hover
-    hoverButtons: true,      // Buttons scale/glow on hover
-    heroAnimations: false,   // Animated hero background/elements
-    floatingElements: false, // Decorative floating shapes
+    scrollReveal: true,
+    hoverCards: true,
+    hoverButtons: true,
+    heroAnimations: false,
+    floatingElements: false,
   },
 
   // Granular visual effect controls
   effects: {
-    roundedCorners: true,    // Rounded corners on cards, buttons, images
-    shadows: true,           // Drop shadows on cards and elements
-    gradients: false,        // Gradient backgrounds and buttons
-    glassBlur: false,        // Glass/blur effect on navigation
-    decorativeBorders: false, // Accent borders and dividers
+    roundedCorners: true,
+    shadows: true,
+    gradients: false,
+    glassBlur: false,
+    decorativeBorders: false,
   },
 
-  // Step 5 - Structure
-  sections: ['hero', 'services', 'about', 'contact'],
-  sectionContent: {}, // { [sectionId]: "free-form content description" }
-  customSections: [], // Array of { name, description }
+  // Step 5 - Structure & Content
+  sections: ['hero'],
+  sectionOrder: ['hero'], // For drag-and-drop ordering
+  sectionVariants: {}, // { [sectionId]: 'grid' | 'list' | 'bento' | etc. }
+
+  // Structured content per section
+  sectionContent: {
+    hero: { headline: '', subheadline: '', cta: '' },
+    services: { items: [] }, // Array of { name, description }
+    about: { story: '', founded: '', difference: '', audience: '' },
+    gallery: { description: '' },
+    testimonials: { items: [] }, // Array of { quote, name, role }
+    team: { items: [] }, // Array of { name, role, bio }
+    pricing: { items: [] }, // Array of { name, price, features, featured }
+    faq: { items: [] }, // Array of { question, answer }
+    contact: { heading: '', subheading: '', showForm: true, showMap: false },
+  },
+
+  customSections: [],
   headerStyle: 'standard',
   customHeaderStyle: '',
   heroStyle: 'split',
@@ -57,6 +77,10 @@ const initialState = {
   includeFeatures: [],
   customFeatures: [],
   extraNotes: '',
+
+  // AI suggestions
+  suggestedSections: [], // AI-suggested sections based on business
+  suggestionsAccepted: false,
 }
 
 export function useFormState() {
@@ -122,11 +146,107 @@ export function useFormState() {
   }, [])
 
   const toggleSection = useCallback((section) => {
+    setFormData(prev => {
+      const isRemoving = prev.sections.includes(section)
+      const newSections = isRemoving
+        ? prev.sections.filter(s => s !== section)
+        : [...prev.sections, section]
+      const newOrder = isRemoving
+        ? prev.sectionOrder.filter(s => s !== section)
+        : [...prev.sectionOrder, section]
+      return {
+        ...prev,
+        sections: newSections,
+        sectionOrder: newOrder,
+      }
+    })
+  }, [])
+
+  const reorderSections = useCallback((newOrder) => {
     setFormData(prev => ({
       ...prev,
-      sections: prev.sections.includes(section)
-        ? prev.sections.filter(s => s !== section)
-        : [...prev.sections, section],
+      sectionOrder: newOrder,
+    }))
+  }, [])
+
+  const setSectionVariant = useCallback((sectionId, variant) => {
+    setFormData(prev => ({
+      ...prev,
+      sectionVariants: {
+        ...prev.sectionVariants,
+        [sectionId]: variant,
+      },
+    }))
+  }, [])
+
+  const updateStructuredContent = useCallback((sectionId, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      sectionContent: {
+        ...prev.sectionContent,
+        [sectionId]: {
+          ...prev.sectionContent[sectionId],
+          [field]: value,
+        },
+      },
+    }))
+  }, [])
+
+  const addContentItem = useCallback((sectionId, item) => {
+    setFormData(prev => ({
+      ...prev,
+      sectionContent: {
+        ...prev.sectionContent,
+        [sectionId]: {
+          ...prev.sectionContent[sectionId],
+          items: [...(prev.sectionContent[sectionId]?.items || []), item],
+        },
+      },
+    }))
+  }, [])
+
+  const updateContentItem = useCallback((sectionId, index, item) => {
+    setFormData(prev => ({
+      ...prev,
+      sectionContent: {
+        ...prev.sectionContent,
+        [sectionId]: {
+          ...prev.sectionContent[sectionId],
+          items: prev.sectionContent[sectionId]?.items.map((it, i) =>
+            i === index ? { ...it, ...item } : it
+          ),
+        },
+      },
+    }))
+  }, [])
+
+  const removeContentItem = useCallback((sectionId, index) => {
+    setFormData(prev => ({
+      ...prev,
+      sectionContent: {
+        ...prev.sectionContent,
+        [sectionId]: {
+          ...prev.sectionContent[sectionId],
+          items: prev.sectionContent[sectionId]?.items.filter((_, i) => i !== index),
+        },
+      },
+    }))
+  }, [])
+
+  const acceptSuggestions = useCallback((suggestions) => {
+    setFormData(prev => ({
+      ...prev,
+      sections: ['hero', ...suggestions],
+      sectionOrder: ['hero', ...suggestions],
+      suggestedSections: suggestions,
+      suggestionsAccepted: true,
+    }))
+  }, [])
+
+  const setExtractedColors = useCallback((colors) => {
+    setFormData(prev => ({
+      ...prev,
+      extractedColors: colors,
     }))
   }, [])
 
@@ -199,6 +319,14 @@ export function useFormState() {
     toggleEffect,
     updateSectionContent,
     toggleSection,
+    reorderSections,
+    setSectionVariant,
+    updateStructuredContent,
+    addContentItem,
+    updateContentItem,
+    removeContentItem,
+    acceptSuggestions,
+    setExtractedColors,
     toggleFeature,
     addCustomSection,
     updateCustomSection,

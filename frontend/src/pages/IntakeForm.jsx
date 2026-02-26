@@ -29,6 +29,12 @@ export default function IntakeForm() {
     toggleEffect,
     updateSectionContent,
     toggleSection,
+    reorderSections,
+    setSectionVariant,
+    updateStructuredContent,
+    addContentItem,
+    updateContentItem,
+    removeContentItem,
     toggleFeature,
     addCustomSection,
     updateCustomSection,
@@ -65,12 +71,15 @@ export default function IntakeForm() {
       data.append('colorPrimary', formData.colorPrimary)
       data.append('colorAccent', formData.colorAccent)
       data.append('colorBg', formData.colorBg)
+      data.append('tone', formData.tone)
       data.append('designStyle', formData.designStyle)
       data.append('fontPairing', formData.fontPairing)
       data.append('customFont', formData.customFont)
       data.append('animations', JSON.stringify(formData.animations))
       data.append('effects', JSON.stringify(formData.effects))
       data.append('sections', JSON.stringify(formData.sections))
+      data.append('sectionOrder', JSON.stringify(formData.sectionOrder))
+      data.append('sectionVariants', JSON.stringify(formData.sectionVariants))
       data.append('sectionContent', JSON.stringify(formData.sectionContent))
       data.append('customSections', JSON.stringify(formData.customSections.filter(s => s.name)))
       data.append('headerStyle', formData.headerStyle)
@@ -139,6 +148,12 @@ export default function IntakeForm() {
           <Step5Structure
             {...commonProps}
             toggleSection={toggleSection}
+            reorderSections={reorderSections}
+            setSectionVariant={setSectionVariant}
+            updateStructuredContent={updateStructuredContent}
+            addContentItem={addContentItem}
+            updateContentItem={updateContentItem}
+            removeContentItem={removeContentItem}
             toggleFeature={toggleFeature}
             addCustomSection={addCustomSection}
             updateCustomSection={updateCustomSection}
@@ -147,7 +162,6 @@ export default function IntakeForm() {
             updateCustomFeature={updateCustomFeature}
             removeCustomFeature={removeCustomFeature}
             assignPhotoToSection={assignPhotoToSection}
-            updateSectionContent={updateSectionContent}
             onBack={() => goTo(4)}
             onNext={() => goTo(6)}
           />
@@ -174,7 +188,7 @@ export default function IntakeForm() {
         <Sidebar currentStep={currentStep} onStepClick={goTo} />
 
         <main className="flex-1 min-h-screen">
-          <div className="max-w-2xl mx-auto px-6 py-12 md:py-16">
+          <div className={`mx-auto px-6 py-12 md:py-16 ${currentStep === 5 ? 'max-w-5xl' : 'max-w-2xl'}`}>
             {error && (
               <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl mb-8 text-sm flex items-center gap-3">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

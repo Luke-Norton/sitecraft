@@ -58,7 +58,23 @@ router.post(
       try {
         sections = JSON.parse(req.body.sections || '[]')
       } catch {
-        sections = ['hero', 'services', 'about', 'contact']
+        sections = ['hero']
+      }
+
+      // Parse section order array
+      let sectionOrder = []
+      try {
+        sectionOrder = JSON.parse(req.body.sectionOrder || '[]')
+      } catch {
+        sectionOrder = sections
+      }
+
+      // Parse section variants object
+      let sectionVariants = {}
+      try {
+        sectionVariants = JSON.parse(req.body.sectionVariants || '{}')
+      } catch {
+        sectionVariants = {}
       }
 
       // Parse section content object
@@ -117,12 +133,15 @@ router.post(
         color_primary: req.body.colorPrimary || '#6366f1',
         color_accent: req.body.colorAccent || '#f59e0b',
         color_bg: req.body.colorBg || '#ffffff',
+        tone: req.body.tone || 'professional',
         design_style: req.body.designStyle || 'modern',
         font_pairing: req.body.fontPairing || 'auto',
         custom_font: req.body.customFont || '',
         animations: animations,
         effects: effects,
         sections: sections,
+        section_order: sectionOrder,
+        section_variants: sectionVariants,
         section_content: sectionContent,
         custom_sections: customSections,
         header_style: req.body.headerStyle || 'standard',

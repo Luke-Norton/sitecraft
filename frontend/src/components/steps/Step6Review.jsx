@@ -3,6 +3,14 @@ import StepHeader from '../StepHeader'
 import ReviewSection from '../ReviewSection'
 import Button from '../Button'
 
+const toneLabels = {
+  professional: 'Professional',
+  friendly: 'Friendly & Warm',
+  bold: 'Bold & Direct',
+  playful: 'Playful & Fun',
+  luxurious: 'Luxurious & Premium',
+}
+
 const designStyleLabels = {
   minimal: 'Minimal & Refined',
   modern: 'Modern Professional',
@@ -90,10 +98,22 @@ export default function Step6Review({ formData, onBack, onSubmit, isSubmitting }
     .map(([key]) => effectLabels[key])
     .join(', ')
 
-  // Count sections with content
-  const sectionsWithContent = Object.keys(formData.sectionContent || {}).filter(
-    key => formData.sectionContent[key]?.trim()
-  ).length
+  // Count sections with content (now objects, not strings)
+  const sectionsWithContent = Object.entries(formData.sectionContent || {}).filter(([key, content]) => {
+    if (!content || typeof content !== 'object') return false
+    // Check if any field has content
+    return Object.values(content).some(val => {
+      if (Array.isArray(val)) return val.length > 0
+      if (typeof val === 'string') return val.trim().length > 0
+      return Boolean(val)
+    })
+  }).length
+
+  // Get ordered sections display
+  const orderedSections = (formData.sectionOrder || formData.sections || [])
+    .filter(s => formData.sections?.includes(s))
+    .map(s => sectionLabels[s] || s)
+    .join(' → ')
 
   return (
     <div className="animate-fade-up">
@@ -135,6 +155,7 @@ export default function Step6Review({ formData, onBack, onSubmit, isSubmitting }
       <ReviewSection
         title="Design"
         rows={[
+          ['Tone', toneLabels[formData.tone] || 'Professional'],
           ['Design style', designStyleLabels[formData.designStyle]],
           ['Font', formData.fontPairing === 'custom'
             ? `Custom: ${formData.customFont || '(not specified)'}`
@@ -150,7 +171,7 @@ export default function Step6Review({ formData, onBack, onSubmit, isSubmitting }
       <ReviewSection
         title="Structure"
         rows={[
-          ['Sections', formData.sections?.map(s => sectionLabels[s] || s).join(', ')],
+          ['Section order', orderedSections || 'Hero only'],
           ['Section content', sectionsWithContent > 0 ? `${sectionsWithContent} section(s) with custom content` : 'AI will generate content'],
           ['Custom sections', formData.customSections?.filter(s => s.name).length > 0
             ? formData.customSections.filter(s => s.name).map(s => s.name).join(', ')

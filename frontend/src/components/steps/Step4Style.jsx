@@ -2,6 +2,7 @@ import ProgressBar from '../ProgressBar'
 import StepHeader from '../StepHeader'
 import FormField from '../FormField'
 import ColorPicker from '../ColorPicker'
+import ToneSelector from '../ToneSelector'
 import NavRow from '../NavRow'
 
 const fontOptions = [
@@ -259,8 +260,16 @@ export default function Step4Style({ formData, updateField, toggleAnimation, tog
         description="Choose the look and feel of your website."
       />
 
+      {/* Tone / Voice */}
+      <FormField label="How should your website sound?">
+        <ToneSelector
+          value={formData.tone}
+          onChange={(value) => updateField('tone', value)}
+        />
+      </FormField>
+
       {/* Design Style */}
-      <FormField label="Design Style">
+      <FormField label="Visual Style">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {designOptions.map((option) => {
             const isSelected = formData.designStyle === option.id
