@@ -117,6 +117,15 @@ router.post(
         photoAssignments = {}
       }
 
+      // Parse multi-page settings
+      const multiPage = req.body.multiPage === 'true'
+      let sitePages = []
+      try {
+        sitePages = JSON.parse(req.body.pages || '[]')
+      } catch {
+        sitePages = []
+      }
+
       // Save submission to database
       const submissionData = {
         id: submissionId,
@@ -154,6 +163,9 @@ router.post(
         logo_url: logoUrl,
         photo_urls: photoUrls,
         photo_assignments: photoAssignments,
+        multi_page: multiPage,
+        site_pages: sitePages,
+        generated_pages: [], // Will be populated by build.js
         status: 'pending',
         created_at: new Date().toISOString(),
       }

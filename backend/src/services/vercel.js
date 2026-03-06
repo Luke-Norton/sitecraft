@@ -1,6 +1,8 @@
 const VERCEL_API_URL = 'https://api.vercel.com'
 
-export async function deployToVercel(html, projectName) {
+// Deploy to Vercel - supports single page or multi-page
+// html: string (single page) or pages: array of { name, title, html }
+export async function deployToVercel(html, projectName, pages = null) {
   const token = process.env.VERCEL_API_TOKEN
   const teamId = process.env.VERCEL_TEAM_ID
 
@@ -12,13 +14,25 @@ export async function deployToVercel(html, projectName) {
   const name = projectName || `bespoke-${Date.now()}`
 
   // Create the deployment files
-  const files = [
-    {
-      file: 'index.html',
-      data: Buffer.from(html).toString('base64'),
+  let files = []
+
+  if (pages && pages.length > 0) {
+    // Multi-page deployment
+    files = pages.map(page => ({
+      file: `${page.name}.html`,
+      data: Buffer.from(page.html).toString('base64'),
       encoding: 'base64',
-    },
-  ]
+    }))
+  } else {
+    // Single page deployment
+    files = [
+      {
+        file: 'index.html',
+        data: Buffer.from(html).toString('base64'),
+        encoding: 'base64',
+      },
+    ]
+  }
 
   // Create deployment
   const deploymentUrl = teamId

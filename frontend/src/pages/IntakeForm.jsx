@@ -42,6 +42,11 @@ export default function IntakeForm() {
     addCustomFeature,
     updateCustomFeature,
     removeCustomFeature,
+    addPage,
+    updatePage,
+    removePage,
+    moveSectionToPage,
+    toggleSectionAsPage,
   } = useFormState()
 
   const goTo = (step) => {
@@ -89,6 +94,41 @@ export default function IntakeForm() {
       data.append('includeFeatures', JSON.stringify(formData.includeFeatures))
       data.append('customFeatures', JSON.stringify(formData.customFeatures.filter(Boolean)))
       data.append('extraNotes', formData.extraNotes)
+
+      // Multi-page settings
+      data.append('multiPage', formData.multiPage)
+
+      // Build pages with section assignments
+      if (formData.multiPage) {
+        // Get all assigned sections
+        const assignedSections = new Set()
+        formData.pages.forEach(p => p.sections?.forEach(s => assignedSections.add(s)))
+
+        // Find unassigned sections (go to home page)
+        const allSections = [
+          ...formData.sections,
+          ...formData.customSections.filter(s => s.name).map(s => s.name),
+        ]
+        const unassigned = allSections.filter(s => !assignedSections.has(s))
+
+        // Build final pages array with index getting unassigned sections
+        const pagesWithSections = formData.pages.map(p => ({
+          ...p,
+          sections: p.id === 'index'
+            ? [...(p.sections || []), ...unassigned]
+            : p.sections || [],
+        }))
+        data.append('pages', JSON.stringify(pagesWithSections))
+      } else {
+        // Single page - all sections on index
+        const allSections = [
+          ...formData.sections,
+          ...formData.customSections.filter(s => s.name).map(s => s.name),
+        ]
+        data.append('pages', JSON.stringify([
+          { id: 'index', name: 'index', title: 'Home', sections: allSections }
+        ]))
+      }
 
       // Add files
       if (formData.logoFile) {
@@ -162,6 +202,11 @@ export default function IntakeForm() {
             updateCustomFeature={updateCustomFeature}
             removeCustomFeature={removeCustomFeature}
             assignPhotoToSection={assignPhotoToSection}
+            addPage={addPage}
+            updatePage={updatePage}
+            removePage={removePage}
+            moveSectionToPage={moveSectionToPage}
+            toggleSectionAsPage={toggleSectionAsPage}
             onBack={() => goTo(4)}
             onNext={() => goTo(6)}
           />

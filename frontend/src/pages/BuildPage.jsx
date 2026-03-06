@@ -115,6 +115,10 @@ export default function BuildPage() {
   const [messageIndex, setMessageIndex] = useState(0)
   const [progress, setProgress] = useState(0)
 
+  // Multi-page state
+  const [pages, setPages] = useState([])
+  const [currentPage, setCurrentPage] = useState('index')
+
   const iframeRef = useRef(null)
 
   // Cycle through fun messages during build
@@ -165,7 +169,83 @@ export default function BuildPage() {
         if (data.type === 'chunk') {
           setStreamedCode((prev) => prev + data.content)
         } else if (data.type === 'complete') {
-          setFinalCode(data.content)
+          console.log('=== SSE Complete received ===')
+          console.log('data.multiPage:', data.multiPage)
+          console.log('data.pages:', data.pages?.length || 0)
+
+          // Handle multi-page response from backend
+          if (data.multiPage && data.pages?.length > 0) {
+            console.log('Using backend-parsed multi-page data')
+            setPages(data.pages)
+            setCurrentPage(data.pages[0].name)
+            setFinalCode(data.pages[0].html)
+          } else {
+            // Try frontend parsing as fallback
+            const content = data.content || ''
+            console.log('Content preview:', content.substring(0, 200))
+
+            // Try delimiter format first
+            if (content.includes('===PAGE_START===') && content.includes('===HTML_START===')) {
+              console.log('Trying delimiter format parsing...')
+              const parsedPages = []
+              const pageBlocks = content.split('===PAGE_START===').filter(b => b.trim())
+
+              for (const block of pageBlocks) {
+                if (!block.includes('===PAGE_END===')) continue
+                const pageContent = block.split('===PAGE_END===')[0]
+                const nameMatch = pageContent.match(/name:\s*(\S+)/)
+                const titleMatch = pageContent.match(/title:\s*(.+?)(?:\n|===)/)
+                const htmlMatch = pageContent.match(/===HTML_START===\s*([\s\S]*?)\s*===HTML_END===/)
+
+                if (nameMatch && htmlMatch) {
+                  parsedPages.push({
+                    name: nameMatch[1].trim(),
+                    title: titleMatch ? titleMatch[1].trim() : nameMatch[1].trim(),
+                    html: htmlMatch[1].trim()
+                  })
+                }
+              }
+
+              if (parsedPages.length > 0) {
+                console.log('SUCCESS: Frontend parsed', parsedPages.length, 'pages via delimiters')
+                setPages(parsedPages)
+                setCurrentPage(parsedPages[0].name)
+                setFinalCode(parsedPages[0].html)
+                setPhase('preview')
+                eventSource.close()
+                return
+              }
+            }
+
+            // Fallback to JSON parsing
+            if (content.includes('"pages"') && content.includes('"html"')) {
+              console.log('Trying JSON format parsing...')
+              try {
+                let cleanContent = content.trim()
+                  .replace(/^```(?:json)?\s*\n?/i, '')
+                  .replace(/\n?```\s*$/i, '')
+                  .trim()
+
+                const parsed = JSON.parse(cleanContent)
+                if (parsed.pages?.length > 0) {
+                  const validPages = parsed.pages.filter(p => p.name && p.html)
+                  if (validPages.length > 0) {
+                    console.log('SUCCESS: Frontend parsed', validPages.length, 'pages via JSON')
+                    setPages(validPages)
+                    setCurrentPage(validPages[0].name)
+                    setFinalCode(validPages[0].html)
+                    setPhase('preview')
+                    eventSource.close()
+                    return
+                  }
+                }
+              } catch (e) {
+                console.error('Frontend JSON parse failed:', e.message)
+              }
+            }
+
+            setFinalCode(content)
+          }
           setPhase('preview')
           eventSource.close()
         } else if (data.type === 'error') {
@@ -255,10 +335,15 @@ export default function BuildPage() {
     setError(null)
 
     try {
+      // Build deploy payload - multi-page or single page
+      const payload = pages.length > 0
+        ? { pages }
+        : { html: finalCode }
+
       const response = await fetch(`${API_URL}/api/deploy`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ html: finalCode }),
+        body: JSON.stringify(payload),
       })
 
       if (!response.ok) {
@@ -273,7 +358,7 @@ export default function BuildPage() {
       setError(err.message || 'Deployment failed. Please try again.')
       setPhase('preview')
     }
-  }, [finalCode])
+  }, [finalCode, pages])
 
   // Copy URL to clipboard
   const copyUrl = () => {
@@ -282,9 +367,18 @@ export default function BuildPage() {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  // Get the current page's HTML
+  const getCurrentPageHtml = () => {
+    if (pages.length > 0) {
+      const page = pages.find(p => p.name === currentPage)
+      return page?.html || ''
+    }
+    return finalCode || streamedCode
+  }
+
   // Render the preview iframe
   const renderPreview = () => {
-    const htmlContent = finalCode || streamedCode
+    const htmlContent = getCurrentPageHtml()
     if (!htmlContent) return null
 
     // Inject script to handle navigation within iframe only
@@ -561,6 +655,25 @@ document.addEventListener('click', function(e) {
               <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
               <div className="w-3 h-3 rounded-full bg-[#27c93f]" />
               <span className="ml-4 text-xs text-muted">Preview</span>
+
+              {/* Page Switcher (multi-page only) */}
+              {pages.length > 1 && (
+                <div className="ml-auto flex items-center gap-1">
+                  {pages.map((page) => (
+                    <button
+                      key={page.name}
+                      onClick={() => setCurrentPage(page.name)}
+                      className={`px-3 py-1 text-xs rounded-md transition-all ${
+                        currentPage === page.name
+                          ? 'bg-accent text-black font-medium'
+                          : 'text-muted hover:text-white hover:bg-white/10'
+                      }`}
+                    >
+                      {page.title}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             {renderPreview()}
           </div>

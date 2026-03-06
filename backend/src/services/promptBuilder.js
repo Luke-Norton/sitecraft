@@ -641,6 +641,181 @@ OUTPUT ONLY THE HTML CODE. Start with <!DOCTYPE html>.`)
   return lines.join('\n')
 }
 
+// Build prompt for multi-page generation
+export function buildMultiPagePrompt(submission) {
+  const d = submission
+  const pages = d.site_pages || []
+  const allSections = d.sections || ['hero']
+  const sectionOrder = d.section_order || allSections
+  const sectionVariants = d.section_variants || {}
+  const sectionContent = d.section_content || {}
+
+  // Get user preferences with defaults
+  const tone = d.tone || 'professional'
+  const designStyle = d.design_style || 'modern'
+  const animations = d.animations || { scrollReveal: true, hoverCards: true, hoverButtons: true }
+  const effects = d.effects || { roundedCorners: true, shadows: true }
+  const headerStyle = d.header_style || 'standard'
+  const features = d.include_features || []
+
+  // Handle font selection
+  let fontPairing
+  if (d.font_pairing === 'auto' || !d.font_pairing) {
+    const autoFontMap = {
+      minimal: fontPairings.modern,
+      modern: fontPairings.geometric,
+      bold: fontPairings.technical,
+      playful: fontPairings.friendly,
+      luxury: fontPairings.luxury,
+    }
+    fontPairing = autoFontMap[designStyle] || fontPairings.modern
+  } else {
+    fontPairing = fontPairings[d.font_pairing] || fontPairings.modern
+  }
+
+  // Get sections assigned to each page
+  const getPageSections = (pageId) => {
+    const page = pages.find(p => p.id === pageId || p.name === pageId)
+    if (!page) return []
+    // For index page, include unassigned sections
+    if (pageId === 'index') {
+      const assignedElsewhere = new Set()
+      pages.forEach(p => {
+        if (p.id !== 'index' && p.name !== 'index') {
+          (p.sections || []).forEach(s => assignedElsewhere.add(s))
+        }
+      })
+      const indexSections = page.sections || []
+      const unassigned = allSections.filter(s => !assignedElsewhere.has(s) && !indexSections.includes(s))
+      return [...indexSections, ...unassigned]
+    }
+    return page.sections || []
+  }
+
+  // Build page descriptions with their sections
+  const pageDescriptions = pages.map(p => {
+    const pageSections = getPageSections(p.id || p.name)
+    const sectionList = pageSections.length > 0
+      ? pageSections.map(s => sectionDescriptions[s] ? s : s).join(', ')
+      : 'No specific sections'
+    return `- ${p.name}.html (${p.title}): Sections: ${sectionList}`
+  }).join('\n')
+
+  // Build detailed section instructions per page
+  const pageDetailedSections = pages.map(p => {
+    const pageSections = getPageSections(p.id || p.name)
+    if (pageSections.length === 0) return ''
+
+    let pageInstructions = `\n### PAGE: ${p.title} (${p.name}.html)\n`
+    pageSections.forEach(section => {
+      const desc = sectionDescriptions[section] || ''
+      const variant = sectionVariants[section]
+      const content = sectionContent[section]
+
+      pageInstructions += `\n#### ${section.toUpperCase()}\n`
+      if (desc) pageInstructions += `Base Style: ${desc}\n`
+
+      if (variant && sectionVariantDescriptions[section]?.[variant]) {
+        pageInstructions += `Layout Variant: ${sectionVariantDescriptions[section][variant]}\n`
+      }
+
+      if (content && typeof content === 'object') {
+        pageInstructions += `Content Details:\n`
+        if (section === 'hero') {
+          if (content.headline) pageInstructions += `  - Headline: "${content.headline}"\n`
+          if (content.subheadline) pageInstructions += `  - Subheadline: "${content.subheadline}"\n`
+          if (content.cta) pageInstructions += `  - CTA Button: "${content.cta}"\n`
+        } else if (section === 'services' && content.items?.length > 0) {
+          pageInstructions += `  Services to include:\n`
+          content.items.forEach((item, i) => {
+            if (item.name) pageInstructions += `    ${i + 1}. ${item.name}${item.description ? `: ${item.description}` : ''}\n`
+          })
+        } else if (section === 'about') {
+          if (content.story) pageInstructions += `  - Story: "${content.story}"\n`
+          if (content.founded) pageInstructions += `  - Founded: ${content.founded}\n`
+        } else if (section === 'contact') {
+          if (content.heading) pageInstructions += `  - Heading: "${content.heading}"\n`
+          pageInstructions += `  - Include contact form: ${content.showForm !== false ? 'Yes' : 'No'}\n`
+        }
+      }
+    })
+    return pageInstructions
+  }).filter(Boolean).join('\n')
+
+  return `You are an expert web developer creating a multi-page website. Build a beautiful, production-ready multi-page website using Tailwind CSS.
+
+OUTPUT FORMAT - Use these exact delimiters:
+
+===PAGE_START===
+name: index
+title: Home
+===HTML_START===
+<!DOCTYPE html>
+...complete HTML here...
+</html>
+===HTML_END===
+===PAGE_END===
+
+===PAGE_START===
+name: about
+title: About
+===HTML_START===
+<!DOCTYPE html>
+...complete HTML here...
+</html>
+===HTML_END===
+===PAGE_END===
+
+RULES:
+- Each page wrapped in ===PAGE_START=== and ===PAGE_END===
+- Page metadata (name, title) on separate lines after PAGE_START
+- HTML content wrapped in ===HTML_START=== and ===HTML_END===
+- Output ONLY this format, no explanations or markdown
+
+## BUSINESS INFO
+${d.biz_name ? `- Name: ${d.biz_name}` : ''}
+${d.biz_desc ? `- Description: ${d.biz_desc}` : ''}
+${d.biz_location ? `- Location: ${d.biz_location}` : ''}
+
+## GOAL
+${d.site_goal ? `- ${d.site_goal}` : ''}
+
+## CONTACT INFO
+${d.phone ? `Phone: ${d.phone}` : ''}
+${d.email ? `Email: ${d.email}` : ''}
+${d.address ? `Address: ${d.address}` : ''}
+
+## PAGES TO CREATE
+${pageDescriptions}
+
+## PAGE-SPECIFIC SECTIONS
+${pageDetailedSections}
+
+## NAVIGATION REQUIREMENTS
+- Every page MUST have the same header/nav component
+- Nav links MUST use relative paths: href="./index.html", href="./about.html", etc.
+- Current page should have an active state (text-primary or similar)
+- Mobile hamburger menu on all pages
+- Nav should include links to all pages: ${pages.map(p => p.title).join(', ')}
+
+## SHARED STYLING
+- Tailwind CDN: <script src="https://cdn.tailwindcss.com"></script>
+- Colors: Primary ${d.color_primary || '#6366f1'}, Accent ${d.color_accent || '#f59e0b'}
+- Font: ${fontPairing.fonts}
+- Google Fonts: ${fontPairing.link}
+- Design Style: ${designStyleDescriptions[designStyle] || designStyleDescriptions.modern}
+- Tone: ${toneDescriptions[tone] || toneDescriptions.professional}
+
+## TECHNICAL REQUIREMENTS
+- Each page is a complete, self-contained HTML file
+- Each page includes the same Tailwind config with custom colors
+- All pages share the same header, footer, and design system
+- Internal links use relative paths (./page.html)
+- ${d.logo_url ? `Logo URL: ${d.logo_url}` : 'Use styled text logo with business name'}
+
+FINAL REMINDER: Use the delimiter format (===PAGE_START===, ===HTML_START===, etc). Do NOT use JSON. Do NOT use markdown code blocks. Just output the pages with delimiters.`
+}
+
 export function buildRevisionPrompt(currentCode, changeRequest) {
   return `You are an expert web developer. Apply these changes to the website while maintaining its modern Tailwind-based design:
 

@@ -32,18 +32,24 @@ export async function streamGeneration(prompt, onChunk) {
   // Clean up the response - remove markdown code fences if present
   let cleanedContent = fullContent.trim()
 
-  // Remove ```html at start and ``` at end if present
-  if (cleanedContent.startsWith('```html')) {
-    cleanedContent = cleanedContent.slice(7)
-  } else if (cleanedContent.startsWith('```')) {
-    cleanedContent = cleanedContent.slice(3)
+  // Remove various markdown code block markers
+  // Handle ```html, ```json, or just ```
+  const codeBlockStartRegex = /^```(?:html|json)?\s*\n?/i
+  const codeBlockEndRegex = /\n?```\s*$/
+
+  if (codeBlockStartRegex.test(cleanedContent)) {
+    cleanedContent = cleanedContent.replace(codeBlockStartRegex, '')
   }
 
-  if (cleanedContent.endsWith('```')) {
-    cleanedContent = cleanedContent.slice(0, -3)
+  if (codeBlockEndRegex.test(cleanedContent)) {
+    cleanedContent = cleanedContent.replace(codeBlockEndRegex, '')
   }
 
   cleanedContent = cleanedContent.trim()
+
+  console.log('Claude response cleaned. Length:', cleanedContent.length)
+  console.log('First 100 chars:', cleanedContent.substring(0, 100))
+  console.log('Last 100 chars:', cleanedContent.substring(cleanedContent.length - 100))
 
   return cleanedContent
 }

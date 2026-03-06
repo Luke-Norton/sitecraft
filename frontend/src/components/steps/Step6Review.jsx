@@ -115,6 +115,36 @@ export default function Step6Review({ formData, onBack, onSubmit, isSubmitting }
     .map(s => sectionLabels[s] || s)
     .join(' → ')
 
+  // Get all sections including custom
+  const allSections = [
+    ...formData.sections,
+    ...(formData.customSections || []).filter(s => s.name).map(s => s.name),
+  ]
+
+  // Get page summary for multi-page sites
+  const getPageStructure = () => {
+    if (!formData.multiPage) return null
+
+    const pages = formData.pages || []
+    const assigned = new Set()
+    pages.forEach(p => (p.sections || []).forEach(s => assigned.add(s)))
+    const unassigned = allSections.filter(s => !assigned.has(s))
+
+    return pages.map(p => {
+      const sections = p.id === 'index'
+        ? [...(p.sections || []), ...unassigned]
+        : (p.sections || [])
+
+      if (sections.length === 0 && p.id !== 'index') return null
+
+      const sectionNames = sections
+        .map(s => sectionLabels[s] || s)
+        .join(', ')
+
+      return `${p.title}: ${sectionNames || 'Empty'}`
+    }).filter(Boolean)
+  }
+
   return (
     <div className="animate-fade-up">
       <ProgressBar step={6} />
@@ -171,25 +201,21 @@ export default function Step6Review({ formData, onBack, onSubmit, isSubmitting }
       <ReviewSection
         title="Structure"
         rows={[
-          ['Section order', orderedSections || 'Hero only'],
+          ['Site type', formData.multiPage ? 'Multi-page website' : 'Single page website'],
+          ...(formData.multiPage && getPageStructure()
+            ? getPageStructure().map((pageInfo, i) => [`Page ${i + 1}`, pageInfo])
+            : [['Sections', orderedSections || 'Hero only']]
+          ),
           ['Section content', sectionsWithContent > 0 ? `${sectionsWithContent} section(s) with custom content` : 'AI will generate content'],
-          ['Custom sections', formData.customSections?.filter(s => s.name).length > 0
-            ? formData.customSections.filter(s => s.name).map(s => s.name).join(', ')
-            : null],
-          ['Header', formData.headerStyle === 'custom'
-            ? `Custom: ${formData.customHeaderStyle || '(not specified)'}`
-            : headerLabels[formData.headerStyle]],
-          ['Hero', formData.heroStyle === 'custom'
-            ? `Custom: ${formData.customHeroStyle || '(not specified)'}`
-            : heroLabels[formData.heroStyle]],
-          ['Features', formData.includeFeatures?.length > 0
-            ? formData.includeFeatures.map(f => featureLabels[f] || f).join(', ')
-            : null],
-          ['Custom features', formData.customFeatures?.filter(Boolean).length > 0
-            ? formData.customFeatures.filter(Boolean).join(', ')
-            : null],
-          ['Extra notes', formData.extraNotes],
-        ]}
+          formData.customSections?.filter(s => s.name).length > 0
+            ? ['Custom sections', formData.customSections.filter(s => s.name).map(s => s.name).join(', ')]
+            : null,
+          ['Header', headerLabels[formData.headerStyle] || formData.headerStyle],
+          formData.includeFeatures?.length > 0
+            ? ['Features', formData.includeFeatures.map(f => featureLabels[f] || f).join(', ')]
+            : null,
+          formData.extraNotes ? ['Extra notes', formData.extraNotes] : null,
+        ].filter(Boolean)}
       />
 
       <div className="flex justify-between items-center mt-12 pt-8 border-t border-border">

@@ -1,0 +1,12 @@
+{
+  "name": "bespoke",
+  "private": true,
+  "scripts": {
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd backend && npm test -- --run",
+    "test:frontend": "cd frontend && npm test -- --run",
+    "test:watch": "npm run test:backend:watch & npm run test:frontend:watch",
+    "test:backend:watch": "cd backend && npm test",
+    "test:frontend:watch": "cd frontend && npm test"
+  }
+}

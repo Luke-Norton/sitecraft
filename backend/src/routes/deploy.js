@@ -5,16 +5,17 @@ const router = Router()
 
 router.post('/', async (req, res, next) => {
   try {
-    const { html, projectName } = req.body
+    const { html, projectName, pages } = req.body
 
-    if (!html) {
+    // Require either html or pages
+    if (!html && (!pages || pages.length === 0)) {
       return res.status(400).json({
-        message: 'HTML content is required',
+        message: 'HTML content or pages array is required',
       })
     }
 
-    // Deploy to Vercel
-    const { url, deploymentId } = await deployToVercel(html, projectName)
+    // Deploy to Vercel (multi-page or single page)
+    const { url, deploymentId } = await deployToVercel(html, projectName, pages)
 
     // Submit to Google Indexing (fire and forget)
     submitToGoogleIndexing(url).catch((err) => {

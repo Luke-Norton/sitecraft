@@ -51,6 +51,14 @@ const initialState = {
     decorativeBorders: false,
   },
 
+  // Multi-page settings
+  multiPage: false, // Enable multi-page generation
+  // Pages array - each page has sections assigned to it
+  // When multiPage is false, all sections go on index page
+  pages: [
+    { id: 'index', name: 'index', title: 'Home', sections: [] }, // sections filled dynamically
+  ],
+
   // Step 5 - Structure & Content
   sections: ['hero'],
   sectionOrder: ['hero'], // For drag-and-drop ordering
@@ -309,6 +317,91 @@ export function useFormState() {
     setFormData(initialState)
   }, [])
 
+  // Multi-page management
+  const addPage = useCallback((title) => {
+    const id = title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+    setFormData(prev => ({
+      ...prev,
+      pages: [
+        ...prev.pages,
+        { id, name: id, title, sections: [] },
+      ],
+    }))
+  }, [])
+
+  const updatePage = useCallback((pageId, updates) => {
+    setFormData(prev => ({
+      ...prev,
+      pages: prev.pages.map(p =>
+        p.id === pageId ? { ...p, ...updates } : p
+      ),
+    }))
+  }, [])
+
+  const removePage = useCallback((pageId) => {
+    // Don't allow removing the index page
+    if (pageId === 'index') return
+    setFormData(prev => {
+      const pageToRemove = prev.pages.find(p => p.id === pageId)
+      const sectionsToMove = pageToRemove?.sections || []
+      return {
+        ...prev,
+        pages: prev.pages
+          .filter(p => p.id !== pageId)
+          .map(p => p.id === 'index'
+            ? { ...p, sections: [...p.sections, ...sectionsToMove] }
+            : p
+          ),
+      }
+    })
+  }, [])
+
+  const moveSectionToPage = useCallback((sectionId, targetPageId) => {
+    setFormData(prev => ({
+      ...prev,
+      pages: prev.pages.map(p => ({
+        ...p,
+        sections: p.id === targetPageId
+          ? [...p.sections.filter(s => s !== sectionId), sectionId]
+          : p.sections.filter(s => s !== sectionId),
+      })),
+    }))
+  }, [])
+
+  // Get sections that aren't assigned to any page (for initial assignment)
+  const getUnassignedSections = useCallback(() => {
+    const assignedSections = new Set()
+    formData.pages.forEach(p => p.sections.forEach(s => assignedSections.add(s)))
+    return formData.sections.filter(s => !assignedSections.has(s))
+  }, [formData.pages, formData.sections])
+
+  // Make a section its own page (or remove it from being a page)
+  const toggleSectionAsPage = useCallback((sectionId, sectionLabel) => {
+    setFormData(prev => {
+      // Check if this section already has its own page
+      const existingPage = prev.pages.find(p => p.id !== 'index' && p.sections?.includes(sectionId))
+
+      if (existingPage) {
+        // Remove the page - section goes back to being unassigned (will end up on home)
+        return {
+          ...prev,
+          pages: prev.pages.filter(p => p.id !== existingPage.id),
+        }
+      } else {
+        // Create a new page for this section
+        const title = sectionLabel || sectionId.charAt(0).toUpperCase() + sectionId.slice(1)
+        const id = sectionId // Use section ID as page ID for simplicity
+        return {
+          ...prev,
+          pages: [
+            ...prev.pages,
+            { id, name: id, title, sections: [sectionId] },
+          ],
+        }
+      }
+    })
+  }, [])
+
   return {
     formData,
     updateField,
@@ -335,5 +428,12 @@ export function useFormState() {
     updateCustomFeature,
     removeCustomFeature,
     resetForm,
+    // Multi-page
+    addPage,
+    updatePage,
+    removePage,
+    moveSectionToPage,
+    getUnassignedSections,
+    toggleSectionAsPage,
   }
 }
