@@ -13,7 +13,7 @@ non-technical business owner can go from zero to a live website in minutes.
 ## What Bespoke Is NOT (do not drift into these)
 
 - Not a drag-and-drop editor — users describe, AI builds
-- Not a React/Vue site generator — output is always single-file HTML + Tailwind CSS
+- Not a React/Vue site generator — output is HTML + Tailwind CSS (single-file or multi-page)
 - Not a general purpose AI chat interface — the intake form is the primary UX
 - Not a CMS — Bespoke manages versions and deployments, not ongoing content editing
 
@@ -103,7 +103,7 @@ Missing any step silently breaks the pipeline. Always update all four.
 
 ## Current Product Roadmap (in priority order)
 
-1. **Multi-page generation** — extend beyond single-page HTML output
+1. ~~**Multi-page generation**~~ — ✓ Complete
 2. **Full deployment pipeline** — robust Vercel deploy with error handling and status tracking
 3. **Site management / version control** — users can view history, restore versions, redeploy
 4. **Intake form evolution** — ongoing refinement of form UX and fields
@@ -147,7 +147,7 @@ cd frontend && npm test
 ```
 
 ### Test Coverage
-- **Backend (56 tests)**: promptBuilder, submit route, Vercel service
+- **Backend (62 tests)**: promptBuilder, submit route, build route, Vercel service
 - **Frontend (72 tests)**: useFormState hook, API functions, Button, FormField components
 
 ### Test Files
@@ -168,7 +168,7 @@ Reference `.env.example` only. Never hardcode credentials.
 ## Before Starting Any Task
 
 1. Read `STATUS.md` to understand current state
-2. Read the relevant task file in `/tasks` if one exists
+2. Read the relevant task file in `/tasks` if one exists (task files are created per-task, not always present)
 3. Identify which files will be touched and check for ripple effects
 4. If the task touches `promptBuilder.js`, plan changes carefully before writing any code
 5. After completing work, update `STATUS.md`
