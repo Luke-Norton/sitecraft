@@ -183,34 +183,6 @@ describe('useFormState', () => {
     })
   })
 
-  describe('animations', () => {
-    it('toggles animation settings', () => {
-      const { result } = renderHook(() => useFormState())
-
-      const initial = result.current.formData.animations.scrollReveal
-
-      act(() => {
-        result.current.toggleAnimation('scrollReveal')
-      })
-
-      expect(result.current.formData.animations.scrollReveal).toBe(!initial)
-    })
-  })
-
-  describe('effects', () => {
-    it('toggles effect settings', () => {
-      const { result } = renderHook(() => useFormState())
-
-      const initial = result.current.formData.effects.gradients
-
-      act(() => {
-        result.current.toggleEffect('gradients')
-      })
-
-      expect(result.current.formData.effects.gradients).toBe(!initial)
-    })
-  })
-
   describe('features', () => {
     it('toggles a feature', () => {
       const { result } = renderHook(() => useFormState())

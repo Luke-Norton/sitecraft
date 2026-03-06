@@ -14,12 +14,6 @@ const headerOptions = [
   { id: 'floating', title: 'Floating Pill', desc: 'Modern SaaS-style' },
 ]
 
-const featureOptions = [
-  { id: 'cta-sticky', label: 'Sticky CTA' },
-  { id: 'back-to-top', label: 'Back to Top' },
-  { id: 'newsletter', label: 'Newsletter' },
-  { id: 'chat-widget', label: 'Chat Widget' },
-]
 
 const sectionLabels = {
   hero: 'Hero',
@@ -43,7 +37,6 @@ export default function Step5Structure({
   addContentItem,
   updateContentItem,
   removeContentItem,
-  toggleFeature,
   addCustomSection,
   updateCustomSection,
   removeCustomSection,
@@ -371,33 +364,6 @@ export default function Step5Structure({
                 Drag sections between pages to organize your site. Each page will have its own URL and navigation link.
               </p>
 
-              {/* Unassigned sections */}
-              {getUnassignedSections().length > 0 && (
-                <div
-                  className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4"
-                  onDragOver={handleDragOver}
-                >
-                  <h4 className="text-sm font-medium text-yellow-400 mb-2">
-                    Unassigned Sections
-                  </h4>
-                  <p className="text-xs text-yellow-400/70 mb-3">
-                    These will be added to Home. Drag them to other pages if needed.
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {getUnassignedSections().map((sectionId) => (
-                      <div
-                        key={sectionId}
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, sectionId, null)}
-                        className="px-3 py-1.5 bg-yellow-500/20 text-yellow-300 text-sm rounded-lg cursor-move hover:bg-yellow-500/30 transition-colors"
-                      >
-                        {getSectionLabel(sectionId)}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* Pages */}
               <div className="grid gap-4 md:grid-cols-2">
                 {formData.pages.map((page) => {
@@ -594,26 +560,6 @@ export default function Step5Structure({
                 </div>
               )}
 
-              {/* Extra Features */}
-              <div className="pt-6 border-t border-border">
-                <h3 className="text-sm font-medium text-white mb-3">Extra Features</h3>
-                <div className="flex flex-wrap gap-2">
-                  {featureOptions.map((feature) => (
-                    <button
-                      key={feature.id}
-                      type="button"
-                      onClick={() => toggleFeature(feature.id)}
-                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${
-                        formData.includeFeatures.includes(feature.id)
-                          ? 'bg-accent text-black border-accent'
-                          : 'bg-surface text-muted border-border hover:border-[#555] hover:text-white'
-                      }`}
-                    >
-                      {feature.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
 
               {/* Extra Notes */}
               <div className="pt-6 border-t border-border">

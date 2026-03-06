@@ -156,6 +156,21 @@ export default function BuildPage() {
     }
   }, [phase])
 
+  // Listen for postMessage navigation from the iframe (multi-page preview)
+  useEffect(() => {
+    const handler = (event) => {
+      if (event.data?.type === 'navigate') {
+        const target = pages.find((p) => p.name === event.data.page)
+        if (target) {
+          setCurrentPage(target.name)
+          setFinalCode(target.html)
+        }
+      }
+    }
+    window.addEventListener('message', handler)
+    return () => window.removeEventListener('message', handler)
+  }, [pages])
+
   // Start the build process
   useEffect(() => {
     if (!submissionId) return
@@ -396,6 +411,8 @@ document.addEventListener('click', function(e) {
       }
     } else if (href && !href.startsWith('http') && !href.startsWith('mailto:') && !href.startsWith('tel:')) {
       e.preventDefault();
+      var pageName = href.replace('./', '').replace('.html', '');
+      window.parent.postMessage({ type: 'navigate', page: pageName }, '*');
     }
   }
 });

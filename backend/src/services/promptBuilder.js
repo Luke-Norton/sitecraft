@@ -65,6 +65,143 @@ const fontPairings = {
   },
 }
 
+// Individual font definitions for heading/body split
+const fontDefinitions = {
+  inter: {
+    name: 'Inter',
+    family: "'Inter', system-ui, sans-serif",
+    link: 'Inter:wght@400;500;600;700;800;900',
+    serif: false,
+  },
+  geometric: {
+    name: 'Plus Jakarta Sans',
+    family: "'Plus Jakarta Sans', system-ui, sans-serif",
+    link: 'Plus+Jakarta+Sans:wght@400;500;600;700;800',
+    serif: false,
+  },
+  clean: {
+    name: 'DM Sans',
+    family: "'DM Sans', system-ui, sans-serif",
+    link: 'DM+Sans:wght@400;500;600;700',
+    serif: false,
+  },
+  technical: {
+    name: 'Space Grotesk',
+    family: "'Space Grotesk', system-ui, sans-serif",
+    link: 'Space+Grotesk:wght@400;500;600;700',
+    serif: false,
+  },
+  friendly: {
+    name: 'Outfit',
+    family: "'Outfit', system-ui, sans-serif",
+    link: 'Outfit:wght@400;500;600;700;800',
+    serif: false,
+  },
+  elegant: {
+    name: 'Sora',
+    family: "'Sora', system-ui, sans-serif",
+    link: 'Sora:wght@400;500;600;700;800',
+    serif: false,
+  },
+  editorial: {
+    name: 'Fraunces',
+    family: "'Fraunces', Georgia, serif",
+    link: 'Fraunces:wght@400;500;600;700;800',
+    serif: true,
+  },
+  luxury: {
+    name: 'Cormorant',
+    family: "'Cormorant', Georgia, serif",
+    link: 'Cormorant:wght@400;500;600;700',
+    serif: true,
+  },
+}
+
+// Build font config from heading + body font selections
+// Returns an object compatible with fontPairing { link, tailwind, note, fonts }
+function buildCustomFontDef(fontNameOrUrl) {
+  const val = (fontNameOrUrl || '').trim()
+  if (!val) return fontDefinitions.inter
+  if (val.startsWith('http')) {
+    // User supplied a full Google Fonts URL — use it directly
+    const familyMatch = val.match(/family=([^&:]+)/)
+    const name = familyMatch ? decodeURIComponent(familyMatch[1].replace(/\+/g, ' ')) : 'Custom'
+    return { name, family: `'${name}', sans-serif`, link: null, customUrl: val, serif: false }
+  }
+  // Font name (e.g. "Playfair Display") — build Google Fonts link
+  const name = val
+  return {
+    name,
+    family: `'${name}', sans-serif`,
+    link: `${name.replace(/\s+/g, '+')}:wght@300;400;500;600;700;800`,
+    serif: false,
+  }
+}
+
+function buildFontConfig(headingFont, bodyFont, designStyle, customHeadingFont, customBodyFont) {
+  const isHeadingAuto = !headingFont || headingFont === 'auto'
+  const isBodyAuto = !bodyFont || bodyFont === 'auto'
+  const isHeadingCustom = headingFont === 'custom'
+  const isBodyCustom = bodyFont === 'custom'
+
+  // If both auto, fall through to existing fontPairings autoFontMap logic
+  if (isHeadingAuto && isBodyAuto) return null
+
+  const autoFontMap = {
+    minimal: 'inter',
+    modern: 'geometric',
+    bold: 'technical',
+    playful: 'friendly',
+    luxury: 'luxury',
+  }
+  const resolvedHeading = isHeadingAuto ? (autoFontMap[designStyle] || 'inter') : headingFont
+  const resolvedBody = isBodyAuto ? (autoFontMap[designStyle] || 'inter') : bodyFont
+
+  const hDef = isHeadingCustom
+    ? buildCustomFontDef(customHeadingFont)
+    : (fontDefinitions[resolvedHeading] || fontDefinitions.inter)
+  const bDef = isBodyCustom
+    ? buildCustomFontDef(customBodyFont)
+    : (fontDefinitions[resolvedBody] || fontDefinitions.inter)
+
+  const sameFonts = !isHeadingCustom && !isBodyCustom && resolvedHeading === resolvedBody
+
+  // Build Google Fonts URL (custom URLs are used directly; named fonts get constructed link)
+  let link
+  if (hDef.customUrl) {
+    link = hDef.customUrl
+  } else if (bDef.customUrl) {
+    link = bDef.customUrl
+  } else if (sameFonts) {
+    link = `https://fonts.googleapis.com/css2?family=${hDef.link}&display=swap`
+  } else {
+    const parts = [hDef.link, bDef.link].filter(Boolean)
+    link = `https://fonts.googleapis.com/css2?family=${parts.join('&family=')}&display=swap`
+  }
+
+  // Build Tailwind font family config
+  let tailwind
+  let note
+  if (sameFonts) {
+    tailwind = `fontFamily: { sans: ['${hDef.name}', 'system-ui', 'sans-serif'] }`
+  } else if (hDef.serif) {
+    // Serif heading + sans body: use font-serif for headings, font-sans for body
+    tailwind = `fontFamily: { sans: ['${bDef.name}', 'system-ui', 'sans-serif'], serif: ['${hDef.name}', 'Georgia', 'serif'] }`
+    note = 'Use font-serif for all headings (h1, h2, h3), font-sans for body text and nav'
+  } else {
+    // Different sans fonts: use custom 'heading' key
+    tailwind = `fontFamily: { sans: ['${bDef.name}', 'system-ui', 'sans-serif'], heading: ['${hDef.name}', 'system-ui', 'sans-serif'] }`
+    note = 'Use font-heading for all headings (h1, h2, h3), font-sans for body text and nav'
+  }
+
+  return {
+    fonts: sameFonts ? hDef.name : `${hDef.name} + ${bDef.name}`,
+    link,
+    tailwind,
+    note,
+  }
+}
+
 // Header style descriptions
 const headerStyles = {
   standard: `Modern sticky header with backdrop-blur-md bg-white/80 dark:bg-gray-950/80. Logo left, nav right.
@@ -330,8 +467,8 @@ export function buildPrompt(submission) {
   // Get user preferences with defaults
   const tone = d.tone || 'professional'
   const designStyle = d.design_style || 'modern'
-  const animations = d.animations || { scrollReveal: true, hoverCards: true, hoverButtons: true }
-  const effects = d.effects || { roundedCorners: true, shadows: true }
+  const DEFAULT_ANIMATIONS = { scrollReveal: true, hoverCards: true, hoverButtons: true, heroAnimations: false, floatingElements: false }
+  const DEFAULT_EFFECTS = { roundedCorners: true, shadows: true, gradients: false, glassBlur: true, decorativeBorders: false }
   const sections = d.sections || ['hero']
   const sectionOrder = d.section_order || sections
   const sectionVariants = d.section_variants || {}
@@ -340,10 +477,12 @@ export function buildPrompt(submission) {
   const heroStyle = d.hero_style || 'split'
   const features = d.include_features || []
 
-  // Handle font selection - 'auto' means pick based on design style
+  // Handle font selection: new heading/body split takes priority, falls back to legacy font_pairing
   let fontPairing
-  if (d.font_pairing === 'auto' || !d.font_pairing) {
-    // Pick font based on design style
+  const splitConfig = buildFontConfig(d.heading_font, d.body_font, designStyle, d.custom_heading_font, d.custom_body_font)
+  if (splitConfig) {
+    fontPairing = splitConfig
+  } else if (d.font_pairing === 'auto' || !d.font_pairing) {
     const autoFontMap = {
       minimal: fontPairings.modern,
       modern: fontPairings.geometric,
@@ -601,10 +740,10 @@ Typography scale (use these):
   lines.push(designStyleDescriptions[designStyle] || designStyleDescriptions.modern)
 
   lines.push(`\n## ANIMATIONS`)
-  lines.push(buildAnimationInstructions(animations))
+  lines.push(buildAnimationInstructions(DEFAULT_ANIMATIONS))
 
   lines.push(`\n## VISUAL EFFECTS`)
-  lines.push(buildEffectsInstructions(effects))
+  lines.push(buildEffectsInstructions(DEFAULT_EFFECTS))
 
   lines.push(`\n## ICONS`)
   lines.push(`Use Lucide-style inline SVG icons (clean, 24x24, stroke-based). Examples:`)
@@ -653,14 +792,15 @@ export function buildMultiPagePrompt(submission) {
   // Get user preferences with defaults
   const tone = d.tone || 'professional'
   const designStyle = d.design_style || 'modern'
-  const animations = d.animations || { scrollReveal: true, hoverCards: true, hoverButtons: true }
-  const effects = d.effects || { roundedCorners: true, shadows: true }
   const headerStyle = d.header_style || 'standard'
   const features = d.include_features || []
 
-  // Handle font selection
+  // Handle font selection: new heading/body split takes priority, falls back to legacy font_pairing
   let fontPairing
-  if (d.font_pairing === 'auto' || !d.font_pairing) {
+  const splitConfig2 = buildFontConfig(d.heading_font, d.body_font, designStyle, d.custom_heading_font, d.custom_body_font)
+  if (splitConfig2) {
+    fontPairing = splitConfig2
+  } else if (d.font_pairing === 'auto' || !d.font_pairing) {
     const autoFontMap = {
       minimal: fontPairings.modern,
       modern: fontPairings.geometric,
@@ -742,6 +882,36 @@ export function buildMultiPagePrompt(submission) {
     return pageInstructions
   }).filter(Boolean).join('\n')
 
+  // Build photo section string for multi-page prompt
+  let photoSection = ''
+  if (d.photo_urls?.length > 0) {
+    const photoAssignments = d.photo_assignments || {}
+    const photosBySection = {}
+    const unassignedPhotos = []
+
+    d.photo_urls.forEach((url, i) => {
+      const section = photoAssignments[i]
+      if (section) {
+        if (!photosBySection[section]) photosBySection[section] = []
+        photosBySection[section].push(url)
+      } else {
+        unassignedPhotos.push(url)
+      }
+    })
+
+    const parts = ['\n## PHOTOS']
+    Object.entries(photosBySection).forEach(([section, urls]) => {
+      parts.push(`\nFOR ${section.toUpperCase()} SECTION:`)
+      urls.forEach(url => parts.push(`  - ${url}`))
+    })
+    if (unassignedPhotos.length > 0) {
+      parts.push('\nUNASSIGNED (use where appropriate):')
+      unassignedPhotos.forEach(url => parts.push(`  - ${url}`))
+    }
+    parts.push('\nIMPORTANT: Use the photos EXACTLY as assigned above. Photos marked for a specific section MUST appear in that section using <img> tags with the exact URLs provided.')
+    photoSection = parts.join('\n')
+  }
+
   return `You are an expert web developer creating a multi-page website. Build a beautiful, production-ready multi-page website using Tailwind CSS.
 
 OUTPUT FORMAT - Use these exact delimiters:
@@ -812,7 +982,7 @@ ${pageDetailedSections}
 - All pages share the same header, footer, and design system
 - Internal links use relative paths (./page.html)
 - ${d.logo_url ? `Logo URL: ${d.logo_url}` : 'Use styled text logo with business name'}
-
+${photoSection}
 FINAL REMINDER: Use the delimiter format (===PAGE_START===, ===HTML_START===, etc). Do NOT use JSON. Do NOT use markdown code blocks. Just output the pages with delimiters.`
 }
 

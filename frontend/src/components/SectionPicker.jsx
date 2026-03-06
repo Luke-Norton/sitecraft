@@ -67,9 +67,9 @@ const sectionDefinitions = {
     label: 'Gallery',
     description: 'Show off your work',
     wireframe: (
-      <div className="grid grid-cols-3 gap-0.5">
+      <div className="grid grid-cols-3 gap-1">
         {[1, 2, 3, 4, 5, 6].map(i => (
-          <div key={i} className="h-2 bg-current rounded-sm opacity-30" />
+          <div key={i} className="h-4 bg-current rounded opacity-50" />
         ))}
       </div>
     ),

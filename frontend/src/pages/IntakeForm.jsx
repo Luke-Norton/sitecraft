@@ -25,8 +25,6 @@ export default function IntakeForm() {
     setLogoFile,
     setPhotoFiles,
     assignPhotoToSection,
-    toggleAnimation,
-    toggleEffect,
     updateSectionContent,
     toggleSection,
     reorderSections,
@@ -78,10 +76,10 @@ export default function IntakeForm() {
       data.append('colorBg', formData.colorBg)
       data.append('tone', formData.tone)
       data.append('designStyle', formData.designStyle)
-      data.append('fontPairing', formData.fontPairing)
-      data.append('customFont', formData.customFont)
-      data.append('animations', JSON.stringify(formData.animations))
-      data.append('effects', JSON.stringify(formData.effects))
+      data.append('headingFont', formData.headingFont)
+      data.append('customHeadingFont', formData.customHeadingFont)
+      data.append('bodyFont', formData.bodyFont)
+      data.append('customBodyFont', formData.customBodyFont)
       data.append('sections', JSON.stringify(formData.sections))
       data.append('sectionOrder', JSON.stringify(formData.sectionOrder))
       data.append('sectionVariants', JSON.stringify(formData.sectionVariants))
@@ -177,8 +175,6 @@ export default function IntakeForm() {
         return (
           <Step4Style
             {...commonProps}
-            toggleAnimation={toggleAnimation}
-            toggleEffect={toggleEffect}
             onBack={() => goTo(3)}
             onNext={() => goTo(5)}
           />

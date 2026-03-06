@@ -74,35 +74,7 @@ describe('Submit Route', () => {
     expect(savedData.section_order).toEqual(['hero', 'contact', 'about'])
   })
 
-  it('parses animations object correctly', async () => {
-    const animations = {
-      scrollReveal: true,
-      hoverCards: false,
-      heroAnimations: true,
-    }
 
-    await request(app)
-      .post('/api/submit')
-      .field('animations', JSON.stringify(animations))
-
-    const savedData = saveSubmission.mock.calls[0][0]
-    expect(savedData.animations).toEqual(animations)
-  })
-
-  it('parses effects object correctly', async () => {
-    const effects = {
-      roundedCorners: true,
-      shadows: false,
-      gradients: true,
-    }
-
-    await request(app)
-      .post('/api/submit')
-      .field('effects', JSON.stringify(effects))
-
-    const savedData = saveSubmission.mock.calls[0][0]
-    expect(savedData.effects).toEqual(effects)
-  })
 
   it('parses section content correctly', async () => {
     const sectionContent = {
@@ -196,12 +168,10 @@ describe('Submit Route', () => {
     await request(app)
       .post('/api/submit')
       .field('sections', 'not valid json')
-      .field('animations', '{broken')
 
     const savedData = saveSubmission.mock.calls[0][0]
     // Should fall back to defaults
     expect(savedData.sections).toEqual(['hero'])
-    expect(savedData.animations).toEqual({})
   })
 
   it('sets status to pending', async () => {

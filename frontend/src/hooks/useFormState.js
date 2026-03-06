@@ -26,30 +26,14 @@ const initialState = {
   // Step 4 - Style
   tone: 'professional', // professional, friendly, bold, playful, luxurious
   designStyle: 'modern',
-  fontPairing: 'auto',
-  customFont: '',
+  headingFont: 'auto',
+  customHeadingFont: '',
+  bodyFont: 'auto',
+  customBodyFont: '',
   colorPrimary: '#6366f1',
   colorAccent: '#f59e0b',
   colorBg: '#ffffff',
   colorsFromLogo: false, // Whether to use extracted colors
-
-  // Granular animation controls
-  animations: {
-    scrollReveal: true,
-    hoverCards: true,
-    hoverButtons: true,
-    heroAnimations: false,
-    floatingElements: false,
-  },
-
-  // Granular visual effect controls
-  effects: {
-    roundedCorners: true,
-    shadows: true,
-    gradients: false,
-    glassBlur: false,
-    decorativeBorders: false,
-  },
 
   // Multi-page settings
   multiPage: false, // Enable multi-page generation
@@ -119,26 +103,6 @@ export function useFormState() {
       photoAssignments: {
         ...prev.photoAssignments,
         [photoIndex]: sectionId || null, // null means "auto/unassigned"
-      },
-    }))
-  }, [])
-
-  const toggleAnimation = useCallback((key) => {
-    setFormData(prev => ({
-      ...prev,
-      animations: {
-        ...prev.animations,
-        [key]: !prev.animations[key],
-      },
-    }))
-  }, [])
-
-  const toggleEffect = useCallback((key) => {
-    setFormData(prev => ({
-      ...prev,
-      effects: {
-        ...prev.effects,
-        [key]: !prev.effects[key],
       },
     }))
   }, [])
@@ -408,8 +372,6 @@ export function useFormState() {
     setLogoFile,
     setPhotoFiles,
     assignPhotoToSection,
-    toggleAnimation,
-    toggleEffect,
     updateSectionContent,
     toggleSection,
     reorderSections,

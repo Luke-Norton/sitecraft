@@ -37,22 +37,6 @@ router.post(
         }
       }
 
-      // Parse animations object
-      let animations = {}
-      try {
-        animations = JSON.parse(req.body.animations || '{}')
-      } catch {
-        animations = {}
-      }
-
-      // Parse effects object
-      let effects = {}
-      try {
-        effects = JSON.parse(req.body.effects || '{}')
-      } catch {
-        effects = {}
-      }
-
       // Parse sections array
       let sections = []
       try {
@@ -144,10 +128,13 @@ router.post(
         color_bg: req.body.colorBg || '#ffffff',
         tone: req.body.tone || 'professional',
         design_style: req.body.designStyle || 'modern',
-        font_pairing: req.body.fontPairing || 'auto',
-        custom_font: req.body.customFont || '',
-        animations: animations,
-        effects: effects,
+        // MIGRATION: heading_font and body_font replace font_pairing and custom_font
+        // Run: ALTER TABLE submissions ADD COLUMN heading_font text DEFAULT 'auto';
+        //      ALTER TABLE submissions ADD COLUMN body_font text DEFAULT 'auto';
+        heading_font: req.body.headingFont || 'auto',
+        custom_heading_font: req.body.customHeadingFont || '',
+        body_font: req.body.bodyFont || 'auto',
+        custom_body_font: req.body.customBodyFont || '',
         sections: sections,
         section_order: sectionOrder,
         section_variants: sectionVariants,

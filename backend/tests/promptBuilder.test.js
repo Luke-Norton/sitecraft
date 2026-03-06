@@ -145,39 +145,19 @@ describe('promptBuilder', () => {
       expect(prompt).toContain('MINIMAL & REFINED DESIGN')
     })
 
-    it('includes animation instructions based on settings', () => {
-      const submission = {
-        animations: {
-          scrollReveal: true,
-          hoverCards: true,
-          hoverButtons: false,
-          heroAnimations: false,
-          floatingElements: false,
-        },
-      }
-
-      const prompt = buildPrompt(submission)
+    it('always includes default animation instructions', () => {
+      const prompt = buildPrompt({})
 
       expect(prompt).toContain('SCROLL REVEAL')
       expect(prompt).toContain('CARD HOVER')
     })
 
-    it('includes effect instructions based on settings', () => {
-      const submission = {
-        effects: {
-          roundedCorners: true,
-          shadows: true,
-          gradients: true,
-          glassBlur: false,
-          decorativeBorders: false,
-        },
-      }
-
-      const prompt = buildPrompt(submission)
+    it('always includes default effect instructions', () => {
+      const prompt = buildPrompt({})
 
       expect(prompt).toContain('ROUNDED CORNERS')
       expect(prompt).toContain('SHADOWS')
-      expect(prompt).toContain('GRADIENTS')
+      expect(prompt).toContain('GLASS')
     })
 
     it('includes custom sections', () => {
@@ -274,9 +254,10 @@ describe('promptBuilder', () => {
 
       const prompt = buildMultiPagePrompt(submission)
 
-      expect(prompt).toContain('"pages"')
-      expect(prompt).toContain('"name":"index"')
-      expect(prompt).toContain('"html":"<!DOCTYPE html>..."')
+      expect(prompt).toContain('===PAGE_START===')
+      expect(prompt).toContain('===HTML_START===')
+      expect(prompt).toContain('===HTML_END===')
+      expect(prompt).toContain('===PAGE_END===')
     })
 
     it('includes page descriptions with sections', () => {
