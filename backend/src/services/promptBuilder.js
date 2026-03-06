@@ -995,9 +995,10 @@ Current code:
 ${currentCode}
 
 RULES:
-- Output ONLY the complete updated HTML file
-- No markdown, no explanations
-- Start with <!DOCTYPE html>, end with </html>
+- First, write ONE line starting with exactly "PLAN:" briefly describing what you'll change (e.g. "PLAN: I'll update the hero background to navy and increase the headline size.")
+- Then immediately output the complete updated HTML file
+- No other text before or after the HTML
+- Start the HTML with <!DOCTYPE html>, end with </html>
 - Keep using Tailwind CSS classes (the CDN is already included)
 - Maintain the existing design quality and consistency
 - NEVER use emojis - use inline SVG icons

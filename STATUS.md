@@ -20,7 +20,7 @@ Claude Code should read this before starting any work.
 - [x] Multi-page HTML generation — delimiter-based output, dynamic page/section assignment
 - [x] Photos (uploaded + assigned) correctly injected into both single-page and multi-page prompts
 - [x] SSE streaming on BuildPage (real-time generation preview)
-- [x] Basic revision loop (describe changes → regenerate)
+- [x] Basic revision loop — AI plan message in chat, iframe updates only on completion (no streaming flash)
 - [x] Basic Vercel deployment
 - [x] Test suite (134 tests: 62 backend, 72 frontend)
 
@@ -52,6 +52,7 @@ Claude Code should read this before starting any work.
 
 | Date | Decision | Reason |
 |------|----------|--------|
+| 2026-03-06 | AI plan message in revision chat | Claude emits a PLAN: line first so user sees intent immediately; iframe no longer flashes partial HTML during revision |
 | 2026-03-06 | Photo section added to buildMultiPagePrompt() | Photos were silently omitted from multi-page prompts; now mirrors single-page logic |
 | 2026-03-05 | Multi-page output uses delimiter format (===PAGE_START===, etc.) | Enables reliable parsing after SSE stream completes |
 | 2026-03-05 | Pages use relative paths (./about.html) for nav links | Works correctly when deployed to Vercel |

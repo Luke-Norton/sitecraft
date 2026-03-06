@@ -90,21 +90,11 @@ const buildingMessages = [
   { text: "Almost there...", icon: "check" },
 ]
 
-const revisingMessages = [
-  { text: "Reading your feedback...", icon: "code" },
-  { text: "Tweaking the design...", icon: "sliders" },
-  { text: "Adjusting the visuals...", icon: "palette" },
-  { text: "Making it even better...", icon: "sparkles" },
-  { text: "Applying your changes...", icon: "wand" },
-  { text: "Perfecting the details...", icon: "layers" },
-  { text: "Almost done...", icon: "check" },
-]
-
 export default function BuildPage() {
   const { submissionId } = useParams()
   const navigate = useNavigate()
 
-  const [phase, setPhase] = useState('building') // building, preview, revising, deploying, success
+  const [phase, setPhase] = useState('building') // building, preview, deploying, success
   const [streamedCode, setStreamedCode] = useState('')
   const [finalCode, setFinalCode] = useState('')
   const [deployedUrl, setDeployedUrl] = useState('')
@@ -113,46 +103,41 @@ export default function BuildPage() {
   const [isRevising, setIsRevising] = useState(false)
   const [copied, setCopied] = useState(false)
   const [messageIndex, setMessageIndex] = useState(0)
-  const [progress, setProgress] = useState(0)
 
   // Multi-page state
   const [pages, setPages] = useState([])
   const [currentPage, setCurrentPage] = useState('index')
 
+  // Chat state
+  const [chatMessages, setChatMessages] = useState([])
+  const chatBottomRef = useRef(null)
+
   const iframeRef = useRef(null)
 
   // Cycle through fun messages during build
   useEffect(() => {
-    if (phase !== 'building' && phase !== 'revising') return
+    if (phase !== 'building') return
 
-    const messages = phase === 'revising' ? revisingMessages : buildingMessages
     const interval = setInterval(() => {
-      setMessageIndex((prev) => (prev + 1) % messages.length)
+      setMessageIndex((prev) => (prev + 1) % buildingMessages.length)
     }, 2500)
 
     return () => clearInterval(interval)
   }, [phase])
 
-  // Animate progress bar
+
+  // Auto-scroll chat on new message or typing indicator
   useEffect(() => {
-    if (phase !== 'building' && phase !== 'revising') return
+    chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [chatMessages, isRevising])
 
-    // Simulate progress that slows down as it approaches 90%
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 90) return prev
-        const increment = Math.max(0.5, (90 - prev) / 20)
-        return Math.min(90, prev + increment)
-      })
-    }, 200)
-
-    return () => clearInterval(interval)
-  }, [phase])
-
-  // Jump to 100% when complete
+  // Show welcome message when build completes
   useEffect(() => {
-    if (phase === 'preview') {
-      setProgress(100)
+    if (phase === 'preview' && chatMessages.length === 0) {
+      setChatMessages([{
+        role: 'assistant',
+        text: "Your site is ready! Describe any changes you'd like and I'll update it instantly."
+      }])
     }
   }, [phase])
 
@@ -285,24 +270,20 @@ export default function BuildPage() {
   const handleRevision = useCallback(async () => {
     if (!changeRequest.trim()) return
 
+    const userText = changeRequest
+    setChatMessages(prev => [...prev, { role: 'user', text: userText }])
+    setChangeRequest('')
     setIsRevising(true)
-    setPhase('revising')
-    setStreamedCode('')
     setError(null)
 
     try {
       const response = await fetch(`${API_URL}/api/revise`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code: finalCode,
-          changes: changeRequest,
-        }),
+        body: JSON.stringify({ code: finalCode, changes: userText }),
       })
 
-      if (!response.ok) {
-        throw new Error('Failed to start revision')
-      }
+      if (!response.ok) throw new Error('Failed to start revision')
 
       const reader = response.body.getReader()
       const decoder = new TextDecoder()
@@ -313,38 +294,43 @@ export default function BuildPage() {
         if (done) break
 
         buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split('\n')
+        const lines = buffer.split(String.fromCharCode(10))
         buffer = lines.pop() || ''
 
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(6))
-              if (data.type === 'chunk') {
-                setStreamedCode((prev) => prev + data.content)
+              if (data.type === 'plan') {
+                // Show the AI's plan in chat — replaces typing dots
+                setChatMessages(prev => [...prev, { role: 'assistant', text: data.content }])
               } else if (data.type === 'complete') {
+                if (pages.length > 0) {
+                  setPages(prev => prev.map(p =>
+                    p.name === currentPage ? { ...p, html: data.content } : p
+                  ))
+                }
                 setFinalCode(data.content)
-                setPhase('preview')
-                setChangeRequest('')
+                setChatMessages(prev => [...prev, {
+                  role: 'assistant',
+                  text: "Done! Your site has been updated."
+                }])
               } else if (data.type === 'error') {
                 setError(data.message)
-                setPhase('preview')
               }
-            } catch (e) {
-              // Skip malformed JSON
-            }
+              // data.type === 'chunk' — ignored, no streaming preview
+            } catch (e) { /* skip malformed JSON */ }
           }
         }
       }
     } catch (err) {
       setError(err.message || 'Failed to revise. Please try again.')
-      setPhase('preview')
     } finally {
       setIsRevising(false)
     }
-  }, [changeRequest, finalCode])
+  }, [changeRequest, finalCode, pages, currentPage])
 
-  // Handle deploy
+    // Handle deploy
   const handleDeploy = useCallback(async () => {
     setPhase('deploying')
     setError(null)
@@ -427,16 +413,15 @@ document.addEventListener('click', function(e) {
         ref={iframeRef}
         srcDoc={processedHtml}
         title="Site Preview"
-        className="w-full min-h-[600px] bg-white border-0"
+        className="w-full h-full bg-white border-0"
         sandbox="allow-scripts"
       />
     )
   }
 
   // Building phase
-  if (phase === 'building' || phase === 'revising') {
-    const messages = phase === 'revising' ? revisingMessages : buildingMessages
-    const currentMessage = messages[messageIndex % messages.length]
+  if (phase === 'building') {
+    const currentMessage = buildingMessages[messageIndex % buildingMessages.length]
 
     return (
       <div className="min-h-screen bg-bg">
@@ -467,13 +452,13 @@ document.addEventListener('click', function(e) {
             <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/20 rounded-full px-4 py-2 mb-6">
               <div className="w-2 h-2 bg-accent rounded-full animate-pulse" />
               <span className="text-accent text-sm font-medium">
-                {phase === 'revising' ? 'Updating' : 'Building'}
+                Building
               </span>
             </div>
 
             {/* Main heading */}
             <h1 className="font-syne text-2xl md:text-3xl font-bold text-white mb-3">
-              {phase === 'revising' ? 'Updating your website' : 'Building your website'}
+              Building your website
             </h1>
 
             {/* Animated message */}
@@ -481,18 +466,6 @@ document.addEventListener('click', function(e) {
               {currentMessage.text}
             </p>
 
-            {/* Progress bar */}
-            <div className="w-full bg-surface border border-border rounded-full h-3 mb-4 overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-accent/80 to-accent rounded-full transition-all duration-300 ease-out"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-
-            {/* Progress percentage */}
-            <p className="text-sm text-muted">
-              {Math.round(progress)}% complete
-            </p>
 
             {/* Fun footer text */}
             <p className="text-xs text-muted/50 mt-8">
@@ -625,117 +598,133 @@ document.addEventListener('click', function(e) {
     )
   }
 
-  // Preview phase
+  // Preview phase — split-pane layout
   return (
-    <div className="min-h-screen bg-bg">
-      {/* Header */}
-      <header className="border-b border-border px-6 py-4 flex items-center justify-between">
-        <Link to="/" className="font-syne font-extrabold text-xl text-accent">
-          Bespoke
-        </Link>
-        <div className="flex gap-3">
-          <Button
-            variant="outline"
-            onClick={() => {
-              const el = document.getElementById('revision-section')
-              el?.scrollIntoView({ behavior: 'smooth' })
-            }}
-          >
-            Request Changes
-          </Button>
-          <Button onClick={handleDeploy}>
-            Publish Site
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
-            </svg>
-          </Button>
-        </div>
+    <div className="h-screen bg-bg flex flex-col">
+      {/* Header — full width */}
+      <header className="border-b border-border px-6 py-4 flex items-center justify-between flex-shrink-0">
+        <Link to="/" className="font-syne font-extrabold text-xl text-accent">Bespoke</Link>
+        <Button onClick={handleDeploy} disabled={isRevising}>
+          Publish Site
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
+          </svg>
+        </Button>
       </header>
 
-      <div className="p-6 md:p-8">
-        <div className="max-w-6xl mx-auto">
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl mb-6 text-sm flex items-center gap-3">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
-              {error}
-            </div>
-          )}
+      {/* Body — two columns */}
+      <div className="flex flex-1 overflow-hidden">
 
-          {/* Preview */}
-          <div className="bg-surface border border-border rounded-xl overflow-hidden mb-8">
-            <div className="bg-[#1a1a1a] px-4 py-3 flex items-center gap-2 border-b border-border">
-              <div className="w-3 h-3 rounded-full bg-[#ff5f56]" />
-              <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
-              <div className="w-3 h-3 rounded-full bg-[#27c93f]" />
-              <span className="ml-4 text-xs text-muted">Preview</span>
-
-              {/* Page Switcher (multi-page only) */}
-              {pages.length > 1 && (
-                <div className="ml-auto flex items-center gap-1">
-                  {pages.map((page) => (
-                    <button
-                      key={page.name}
-                      onClick={() => setCurrentPage(page.name)}
-                      className={`px-3 py-1 text-xs rounded-md transition-all ${
-                        currentPage === page.name
-                          ? 'bg-accent text-black font-medium'
-                          : 'text-muted hover:text-white hover:bg-white/10'
-                      }`}
-                    >
-                      {page.title}
-                    </button>
-                  ))}
+        {/* LEFT: Chat panel */}
+        <div className="w-80 flex flex-col border-r border-border bg-surface flex-shrink-0">
+          {/* Message list — scrollable */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            {chatMessages.map((msg, i) => (
+              <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                {msg.role === 'assistant' && (
+                  <div className="w-6 h-6 rounded-full bg-accent flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2">
+                      <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" />
+                    </svg>
+                  </div>
+                )}
+                <div className={`max-w-[80%] rounded-xl px-3 py-2 text-sm leading-relaxed ${
+                  msg.role === 'user'
+                    ? 'bg-accent text-black'
+                    : 'bg-bg border border-border text-white'
+                }`}>
+                  {msg.text}
                 </div>
-              )}
-            </div>
-            {renderPreview()}
+              </div>
+            ))}
+
+            {/* Typing indicator while revising */}
+            {isRevising && (
+              <div className="flex gap-2 justify-start">
+                <div className="w-6 h-6 rounded-full bg-accent flex items-center justify-center flex-shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2">
+                    <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" />
+                  </svg>
+                </div>
+                <div className="bg-bg border border-border rounded-xl px-3 py-2">
+                  <div className="flex gap-1 items-center">
+                    <span className="w-1.5 h-1.5 bg-muted rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 bg-muted rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1.5 h-1.5 bg-muted rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div ref={chatBottomRef} />
           </div>
 
-          {/* Revision section */}
-          <div
-            id="revision-section"
-            className="bg-surface border border-border rounded-xl p-6"
-          >
-            <h2 className="font-syne text-lg font-bold text-white mb-2">
-              Request Changes
-            </h2>
-            <p className="text-muted text-sm mb-4">
-              Describe what you'd like to change in plain English, and we'll update your site.
-            </p>
-
-            <textarea
-              value={changeRequest}
-              onChange={(e) => setChangeRequest(e.target.value)}
-              placeholder="e.g. Make the header background darker, increase the font size of the hero text, add a testimonials section..."
-              className="w-full bg-bg border border-border rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/30 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 transition-all duration-200 resize-none h-32 mb-4"
-            />
-
-            <Button
-              onClick={handleRevision}
-              disabled={!changeRequest.trim() || isRevising}
-            >
-              {isRevising ? (
-                <>
-                  <svg className="animate-spin" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 12a9 9 0 11-6.219-8.56" />
-                  </svg>
-                  Updating...
-                </>
-              ) : (
-                <>
-                  Apply Changes
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M5 12h14M12 5l7 7-7 7" />
-                  </svg>
-                </>
-              )}
-            </Button>
+          {/* Input area */}
+          <div className="p-4 border-t border-border flex-shrink-0">
+            {error && <p className="text-red-400 text-xs mb-2">{error}</p>}
+            <div className="flex gap-2 items-end">
+              <textarea
+                value={changeRequest}
+                onChange={(e) => setChangeRequest(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    handleRevision()
+                  }
+                }}
+                disabled={isRevising}
+                placeholder="Describe a change..."
+                className="flex-1 bg-bg border border-border rounded-xl px-3 py-2 text-white text-sm placeholder:text-white/30 focus:border-accent focus:outline-none resize-none h-20"
+              />
+              <Button
+                onClick={handleRevision}
+                disabled={!changeRequest.trim() || isRevising}
+                className="flex-shrink-0"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="22" y1="2" x2="11" y2="13" />
+                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                </svg>
+              </Button>
+            </div>
           </div>
         </div>
+
+        {/* RIGHT: Preview panel */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Browser chrome */}
+          <div className="bg-[#1a1a1a] px-4 py-3 flex items-center gap-2 border-b border-border flex-shrink-0">
+            <div className="w-3 h-3 rounded-full bg-[#ff5f56]" />
+            <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
+            <div className="w-3 h-3 rounded-full bg-[#27c93f]" />
+            <span className="ml-4 text-xs text-muted">Preview</span>
+
+            {/* Page Switcher (multi-page only) */}
+            {pages.length > 1 && (
+              <div className="ml-auto flex items-center gap-1">
+                {pages.map((page) => (
+                  <button
+                    key={page.name}
+                    onClick={() => setCurrentPage(page.name)}
+                    className={`px-3 py-1 text-xs rounded-md transition-all ${
+                      currentPage === page.name
+                        ? 'bg-accent text-black font-medium'
+                        : 'text-muted hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    {page.title}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* iframe — fills remaining height */}
+          <div className="flex-1 overflow-hidden">
+            {renderPreview()}
+          </div>
+        </div>
+
       </div>
     </div>
   )
