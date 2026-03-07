@@ -7,7 +7,7 @@ Claude Code should read this before starting any work.
 ---
 
 ## Last Updated
-2026-03-07
+2026-03-07 (GitHub repo selector)
 
 ---
 
@@ -23,6 +23,7 @@ Claude Code should read this before starting any work.
 - [x] Basic revision loop — AI plan message in chat, iframe updates only on completion (no streaming flash)
 - [x] Basic Vercel deployment
 - [x] Auth & login — Supabase email/password auth; protected routes; JWT verification on all API endpoints
+- [x] GitHub integration — OAuth connect, push to GitHub; repo dropdown selects from actual repos; existing repo overwrite support; last-used repo remembered per site
 - [x] Test suite (134 tests: 62 backend, 72 frontend)
 
 ---
@@ -54,6 +55,7 @@ Claude Code should read this before starting any work.
 | Date | Decision | Reason |
 |------|----------|--------|
 | 2026-03-07 | Auth via Supabase (email/password) | Free, no new packages, JWT verification on backend via supabase.auth.getUser() |
+| 2026-03-07 | GitHub repo dropdown instead of text input | Users select from their actual repos; avoids typos/conflicts; matches Bolt/Base44 UX; existing repos supported via file SHA lookup |
 | 2026-03-07 | EventSource passes token as ?token= query param | Native EventSource cannot set Authorization headers |
 | 2026-03-06 | AI plan message in revision chat | Claude emits a PLAN: line first so user sees intent immediately; iframe no longer flashes partial HTML during revision |
 | 2026-03-06 | Photo section added to buildMultiPagePrompt() | Photos were silently omitted from multi-page prompts; now mirrors single-page logic |
