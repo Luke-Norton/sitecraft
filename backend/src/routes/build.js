@@ -95,6 +95,17 @@ router.get('/:id', async (req, res) => {
     // Get submission from database
     const submission = await getSubmission(id)
 
+    // Return cached result if already generated
+        if (submission.generated_html) {
+      const hasPages = submission.generated_pages && submission.generated_pages.length > 0
+      const payload = hasPages
+        ? { type: 'complete', multiPage: true, pages: submission.generated_pages, content: submission.generated_html }
+        : { type: 'complete', content: submission.generated_html }
+      res.write('data: ' + JSON.stringify(payload) + '\n\n')
+      res.end()
+      return
+    }
+
     if (!submission) {
       res.write(`data: ${JSON.stringify({ type: 'error', message: 'Submission not found' })}\n\n`)
       res.end()

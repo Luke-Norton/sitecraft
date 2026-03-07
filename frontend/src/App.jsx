@@ -5,6 +5,7 @@ import IntakeForm from './pages/IntakeForm'
 import BuildPage from './pages/BuildPage'
 import LoginPage from './pages/LoginPage'
 import ProtectedRoute from './components/ProtectedRoute'
+import DashboardPage from './pages/DashboardPage'
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path='/login' element={<LoginPage />} />
         <Route path='/create' element={<ProtectedRoute><IntakeForm /></ProtectedRoute>} />
         <Route path='/build/:submissionId' element={<ProtectedRoute><BuildPage /></ProtectedRoute>} />
+        <Route path='/dashboard' element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       </Routes>
     </AuthProvider>
   )

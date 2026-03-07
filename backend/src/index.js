@@ -8,6 +8,8 @@ import { requireAuth } from './middleware/auth.js'
 import buildRoute from './routes/build.js'
 import reviseRoute from './routes/revise.js'
 import deployRoute from './routes/deploy.js'
+import githubRoute from './routes/github.js'
+import submissionsRoute from './routes/submissions.js'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -29,6 +31,8 @@ app.use('/api/submit', requireAuth, submitRoute)
 app.use('/api/build', requireAuth, buildRoute)
 app.use('/api/revise', requireAuth, reviseRoute)
 app.use('/api/deploy', requireAuth, deployRoute)
+app.use('/api/github', githubRoute)
+app.use('/api/submissions', requireAuth, submissionsRoute)
 
 // Error handler
 app.use((err, req, res, next) => {

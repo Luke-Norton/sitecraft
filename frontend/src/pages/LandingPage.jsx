@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth'
 
 const features = [
   {
@@ -70,6 +71,9 @@ const steps = [
 ]
 
 export default function LandingPage() {
+  const { session, loading, signOut } = useAuth()
+  const user = session?.user
+
   return (
     <div className="min-h-screen bg-bg">
       {/* Navigation */}
@@ -78,12 +82,28 @@ export default function LandingPage() {
           <div className="font-syne font-extrabold text-[24px] tracking-tight">
             <span className="text-accent">Bespoke</span>
           </div>
-          <Link
-            to="/create"
-            className="bg-accent hover:bg-accent/90 text-black font-semibold px-5 py-2.5 rounded-full text-sm transition-all duration-200 hover:shadow-[0_0_20px_rgba(200,241,53,0.3)]"
-          >
-            Start Building
-          </Link>
+          <div className="flex items-center gap-3">
+            {!loading && user ? (
+              <>
+                <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-black font-bold text-sm flex-shrink-0">
+                  {(user.email || 'U')[0].toUpperCase()}
+                </div>
+                <Link to="/dashboard" className="text-sm text-muted hover:text-white transition-colors">
+                  Dashboard
+                </Link>
+              </>
+            ) : !loading ? (
+              <Link to="/login" className="text-sm text-muted hover:text-white transition-colors">
+                Sign In
+              </Link>
+            ) : null}
+            <Link
+              to="/create"
+              className="bg-accent hover:bg-accent/90 text-black font-semibold px-5 py-2.5 rounded-full text-sm transition-all duration-200 hover:shadow-[0_0_20px_rgba(200,241,53,0.3)]"
+            >
+              Start Building
+            </Link>
+          </div>
         </div>
       </nav>
 
