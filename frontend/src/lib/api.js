@@ -1,8 +1,16 @@
+import { supabase } from './supabase'
 const API_URL = import.meta.env.VITE_API_URL || ''
 
+async function getAuthHeaders() {
+  const { data: { session } } = await supabase.auth.getSession()
+  return session ? { Authorization: 'Bearer ' + session.access_token } : {}
+}
+
 export async function submitForm(formData) {
+  const authHeaders = await getAuthHeaders()
   const response = await fetch(`${API_URL}/api/submit`, {
     method: 'POST',
+    headers: authHeaders,
     body: formData,
   })
 

@@ -153,6 +153,7 @@ router.post(
         multi_page: multiPage,
         site_pages: sitePages,
         generated_pages: [], // Will be populated by build.js
+        user_id: req.user?.id || null,
         status: 'pending',
         created_at: new Date().toISOString(),
       }

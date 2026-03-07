@@ -7,7 +7,7 @@ Claude Code should read this before starting any work.
 ---
 
 ## Last Updated
-2026-03-06
+2026-03-07
 
 ---
 
@@ -22,6 +22,7 @@ Claude Code should read this before starting any work.
 - [x] SSE streaming on BuildPage (real-time generation preview)
 - [x] Basic revision loop — AI plan message in chat, iframe updates only on completion (no streaming flash)
 - [x] Basic Vercel deployment
+- [x] Auth & login — Supabase email/password auth; protected routes; JWT verification on all API endpoints
 - [x] Test suite (134 tests: 62 backend, 72 frontend)
 
 ---
@@ -44,7 +45,7 @@ Claude Code should read this before starting any work.
 
 ## Current Focus
 
-> App is in a solid, stable state. Core generation loop (single-page and multi-page) works end-to-end including photos. Ready to tackle deployment pipeline hardening or site management.
+> Auth is live. Users must sign in to access /create and /build/:id. Generation loop, revisions, and deployment all work end-to-end with auth.
 
 ---
 
@@ -52,6 +53,8 @@ Claude Code should read this before starting any work.
 
 | Date | Decision | Reason |
 |------|----------|--------|
+| 2026-03-07 | Auth via Supabase (email/password) | Free, no new packages, JWT verification on backend via supabase.auth.getUser() |
+| 2026-03-07 | EventSource passes token as ?token= query param | Native EventSource cannot set Authorization headers |
 | 2026-03-06 | AI plan message in revision chat | Claude emits a PLAN: line first so user sees intent immediately; iframe no longer flashes partial HTML during revision |
 | 2026-03-06 | Photo section added to buildMultiPagePrompt() | Photos were silently omitted from multi-page prompts; now mirrors single-page logic |
 | 2026-03-05 | Multi-page output uses delimiter format (===PAGE_START===, etc.) | Enables reliable parsing after SSE stream completes |

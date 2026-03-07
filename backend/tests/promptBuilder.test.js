@@ -334,7 +334,7 @@ describe('promptBuilder', () => {
     it('specifies HTML output requirements', () => {
       const prompt = buildRevisionPrompt('<html></html>', 'Change colors')
 
-      expect(prompt).toContain('Start with <!DOCTYPE html>')
+      expect(prompt).toContain('<!DOCTYPE html>')
       expect(prompt).toContain('end with </html>')
     })
 

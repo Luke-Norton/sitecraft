@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { useAuth } from '../hooks/useAuth'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import Button from '../components/Button'
 
@@ -93,6 +94,7 @@ const buildingMessages = [
 export default function BuildPage() {
   const { submissionId } = useParams()
   const navigate = useNavigate()
+  const { session, signOut } = useAuth()
 
   const [phase, setPhase] = useState('building') // building, preview, deploying, success
   const [streamedCode, setStreamedCode] = useState('')
@@ -160,7 +162,8 @@ export default function BuildPage() {
   useEffect(() => {
     if (!submissionId) return
 
-    const eventSource = new EventSource(`${API_URL}/api/build/${submissionId}`)
+    const token = session?.access_token || ''
+    const eventSource = new EventSource(`${API_URL}/api/build/${submissionId}?token=${token}`)
 
     eventSource.onmessage = (event) => {
       try {
@@ -279,7 +282,7 @@ export default function BuildPage() {
     try {
       const response = await fetch(`${API_URL}/api/revise`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (session?.access_token || '') },
         body: JSON.stringify({ code: finalCode, changes: userText }),
       })
 
@@ -343,7 +346,7 @@ export default function BuildPage() {
 
       const response = await fetch(`${API_URL}/api/deploy`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (session?.access_token || '') },
         body: JSON.stringify(payload),
       })
 
@@ -604,12 +607,15 @@ document.addEventListener('click', function(e) {
       {/* Header — full width */}
       <header className="border-b border-border px-6 py-4 flex items-center justify-between flex-shrink-0">
         <Link to="/" className="font-syne font-extrabold text-xl text-accent">Bespoke</Link>
-        <Button onClick={handleDeploy} disabled={isRevising}>
+        <div className="flex items-center gap-3">
+          <button onClick={signOut} className="text-xs text-muted hover:text-white transition-colors">Sign out</button>
+          <Button onClick={handleDeploy} disabled={isRevising}>
           Publish Site
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
           </svg>
         </Button>
+        </div>
       </header>
 
       {/* Body — two columns */}

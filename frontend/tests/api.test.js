@@ -4,6 +4,15 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 const mockFetch = vi.fn()
 global.fetch = mockFetch
 
+// Mock supabase to avoid env var requirement
+vi.mock('../src/lib/supabase', () => ({
+  supabase: {
+    auth: {
+      getSession: async () => ({ data: { session: null } }),
+    },
+  },
+}))
+
 // Import after mocking
 import { submitForm, deployToVercel } from '../src/lib/api'
 
@@ -28,10 +37,10 @@ describe('API functions', () => {
 
       await submitForm(formData)
 
-      expect(mockFetch).toHaveBeenCalledWith('/api/submit', {
+      expect(mockFetch).toHaveBeenCalledWith('/api/submit', expect.objectContaining({
         method: 'POST',
         body: formData,
-      })
+      }))
     })
 
     it('returns submission data on success', async () => {

@@ -4,6 +4,7 @@ import './config.js'
 import express from 'express'
 import cors from 'cors'
 import submitRoute from './routes/submit.js'
+import { requireAuth } from './middleware/auth.js'
 import buildRoute from './routes/build.js'
 import reviseRoute from './routes/revise.js'
 import deployRoute from './routes/deploy.js'
@@ -23,11 +24,11 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
-// Routes
-app.use('/api/submit', submitRoute)
-app.use('/api/build', buildRoute)
-app.use('/api/revise', reviseRoute)
-app.use('/api/deploy', deployRoute)
+// Routes (all protected — require a valid Supabase JWT)
+app.use('/api/submit', requireAuth, submitRoute)
+app.use('/api/build', requireAuth, buildRoute)
+app.use('/api/revise', requireAuth, reviseRoute)
+app.use('/api/deploy', requireAuth, deployRoute)
 
 // Error handler
 app.use((err, req, res, next) => {
