@@ -9,6 +9,7 @@ const sectionDescriptions = {
   pricing: 'Pricing with highlighted "popular" tier. Use ring-2 ring-primary for featured card, gradient backgrounds, clear feature lists with check icons.',
   faq: 'FAQ with animated accordion. Smooth height transitions, rotating chevron icons, clean dividers between items.',
   contact: 'Contact with split layout or floating card design. Form with modern inputs (focus:ring-2), subtle shadows, clear labels.',
+  booking: 'Booking section with a compelling headline, brief supporting text, and the appointment calendar embedded inline. If a Calendly widget is configured in the integrations, it goes here. Otherwise render a clean CTA section with a prominent "Book Now" button.',
 }
 
 // Font pairing definitions - Modern 2024+ fonts
@@ -736,6 +737,39 @@ Typography scale (use these):
     })
   }
 
+  // Integrations
+  const integrations = d.integrations || {}
+  const contactForm = integrations.contactForm || {}
+  const booking = integrations.booking || {}
+
+  if ((contactForm.enabled && contactForm.endpoint) || (booking.enabled && booking.url)) {
+    lines.push(`\n## THIRD-PARTY INTEGRATIONS`)
+    lines.push(`These are REAL, live integrations. Embed them exactly as specified — do NOT use placeholder forms or fake booking widgets.`)
+  }
+
+  if (contactForm.enabled && contactForm.endpoint) {
+    lines.push(`\n### CONTACT FORM (Formspree)
+Replace any contact form with a live Formspree form using this EXACT action URL:
+<form action="${contactForm.endpoint}" method="POST" class="space-y-4">
+  <input type="hidden" name="_subject" value="New message from your website">
+  <div><label class="block text-sm font-medium mb-1">Name</label><input type="text" name="name" required class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"></div>
+  <div><label class="block text-sm font-medium mb-1">Email</label><input type="email" name="email" required class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"></div>
+  <div><label class="block text-sm font-medium mb-1">Message</label><textarea name="message" rows="4" required class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"></textarea></div>
+  <button type="submit" class="w-full bg-primary text-white font-medium py-3 px-6 rounded-xl hover:opacity-90 transition-opacity">Send Message</button>
+</form>
+IMPORTANT: action MUST be exactly "${contactForm.endpoint}". Do NOT add JavaScript form handling — Formspree handles submission via the action attribute.`)
+  }
+
+  if (booking.enabled && booking.url) {
+    lines.push(`\n### BOOKING / CALENDAR (Calendly)
+Add a Calendly inline widget. Add to <head>:
+<link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+In the booking section (use the existing booking section if present, otherwise create one with a "Book a Meeting" heading):
+<div class="calendly-inline-widget" data-url="${booking.url}" style="min-width:320px;height:700px;"></div>
+<script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
+IMPORTANT: data-url MUST be exactly "${booking.url}". Do NOT use an iframe fallback. widget.js must appear immediately after the div.`)
+  }
+
   lines.push(`\n## DESIGN STYLE`)
   lines.push(designStyleDescriptions[designStyle] || designStyleDescriptions.modern)
 
@@ -912,6 +946,19 @@ export function buildMultiPagePrompt(submission) {
     photoSection = parts.join('\n')
   }
 
+  // Build integrations section for multi-page prompt
+  const mpIntegrations = d.integrations || {}
+  const mpContactForm = mpIntegrations.contactForm || {}
+  const mpBooking = mpIntegrations.booking || {}
+  let integrationsSection = ''
+
+  if (mpContactForm.enabled && mpContactForm.endpoint) {
+    integrationsSection += `\n## CONTACT FORM INTEGRATION\nReplace the contact form with a live Formspree form. action="${mpContactForm.endpoint}" method="POST". Include name, email, message fields and hidden input name="_subject". Do NOT use JavaScript submission.\n`
+  }
+  if (mpBooking.enabled && mpBooking.url) {
+    integrationsSection += `\n## BOOKING INTEGRATION (Calendly)\nEmbed: <div class="calendly-inline-widget" data-url="${mpBooking.url}" style="min-width:320px;height:700px;"></div> with <script src="https://assets.calendly.com/assets/external/widget.js" async></script> after it. Add widget.css to each page's <head>.\n`
+  }
+
   return `You are an expert web developer creating a multi-page website. Build a beautiful, production-ready multi-page website using Tailwind CSS.
 
 OUTPUT FORMAT - Use these exact delimiters:
@@ -982,7 +1029,7 @@ ${pageDetailedSections}
 - All pages share the same header, footer, and design system
 - Internal links use relative paths (./page.html)
 - ${d.logo_url ? `Logo URL: ${d.logo_url}` : 'Use styled text logo with business name'}
-${photoSection}
+${photoSection}${integrationsSection}
 FINAL REMINDER: Use the delimiter format (===PAGE_START===, ===HTML_START===, etc). Do NOT use JSON. Do NOT use markdown code blocks. Just output the pages with delimiters.`
 }
 

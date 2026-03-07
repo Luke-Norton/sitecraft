@@ -157,6 +157,27 @@ const sectionDefinitions = {
       { id: 'grid', label: 'Grid', desc: 'Q&A cards in grid' },
     ],
   },
+  booking: {
+    id: 'booking',
+    label: 'Booking',
+    description: 'Let visitors schedule appointments',
+    wireframe: (
+      <div className="space-y-1.5">
+        <div className="h-1.5 w-10 bg-current rounded opacity-50 mx-auto" />
+        <div className="h-1 w-14 bg-current rounded opacity-30 mx-auto" />
+        <div className="flex gap-1 justify-center mt-1">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="w-3 h-3 border border-current rounded opacity-40" />
+          ))}
+        </div>
+        <div className="h-2 w-8 bg-current rounded mx-auto mt-1" />
+      </div>
+    ),
+    variants: [
+      { id: 'centered', label: 'Centered', desc: 'Calendar centered on page' },
+      { id: 'split', label: 'Split', desc: 'Text + calendar side by side' },
+    ],
+  },
   contact: {
     id: 'contact',
     label: 'Contact',

@@ -93,6 +93,15 @@ router.post(
         customFeatures = []
       }
 
+      // Parse integrations object
+      // MIGRATION: ALTER TABLE submissions ADD COLUMN integrations jsonb DEFAULT '{}'::jsonb;
+      let integrations = { contactForm: { enabled: false, endpoint: '' }, booking: { enabled: false, url: '' } }
+      try {
+        integrations = JSON.parse(req.body.integrations || '{}')
+      } catch {
+        // use default
+      }
+
       // Parse photo assignments
       let photoAssignments = {}
       try {
@@ -152,6 +161,7 @@ router.post(
         photo_assignments: photoAssignments,
         multi_page: multiPage,
         site_pages: sitePages,
+        integrations: integrations,
         generated_pages: [], // Will be populated by build.js
         user_id: req.user?.id || null,
         status: 'pending',

@@ -530,6 +530,33 @@ function TeamEditor({ content, onChange }) {
   )
 }
 
+function BookingEditor({ content, onChange }) {
+  return (
+    <div className="space-y-4">
+      <div>
+        <label className="text-sm font-medium text-white mb-1 block">Section Heading</label>
+        <input
+          type="text"
+          value={content.heading || ''}
+          onChange={(e) => onChange('heading', e.target.value)}
+          placeholder="e.g., Book a Free Consultation"
+          className="w-full bg-[#1a1a1a] border border-border rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-muted focus:outline-none focus:border-accent"
+        />
+      </div>
+      <div>
+        <label className="text-sm font-medium text-white mb-1 block">Subheading</label>
+        <input
+          type="text"
+          value={content.subheading || ''}
+          onChange={(e) => onChange('subheading', e.target.value)}
+          placeholder="e.g., Pick a time that works for you — no phone tag."
+          className="w-full bg-[#1a1a1a] border border-border rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-muted focus:outline-none focus:border-accent"
+        />
+      </div>
+    </div>
+  )
+}
+
 // Editor map
 const editors = {
   hero: HeroEditor,
@@ -539,6 +566,7 @@ const editors = {
   pricing: PricingEditor,
   faq: FAQEditor,
   contact: ContactEditor,
+  booking: BookingEditor,
   gallery: GalleryEditor,
   team: TeamEditor,
 }
@@ -553,6 +581,7 @@ const sectionLabels = {
   pricing: 'Pricing',
   faq: 'FAQ',
   contact: 'Contact',
+  booking: 'Booking',
 }
 
 export default function SectionContentEditor({
@@ -562,9 +591,14 @@ export default function SectionContentEditor({
   onAIHelp,
   collapsed = false,
   onToggleCollapse,
+  bare = false,
 }) {
   const Editor = editors[sectionId]
   if (!Editor) return null
+
+  if (bare) {
+    return <Editor content={content || {}} onChange={onChange} onAIHelp={onAIHelp} />
+  }
 
   return (
     <div className="bg-surface border border-border rounded-xl overflow-hidden">

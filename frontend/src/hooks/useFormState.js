@@ -59,6 +59,7 @@ const initialState = {
     pricing: { items: [] }, // Array of { name, price, features, featured }
     faq: { items: [] }, // Array of { question, answer }
     contact: { heading: '', subheading: '', showForm: true, showMap: false },
+    booking: { heading: '', subheading: '' },
   },
 
   customSections: [],
@@ -68,6 +69,10 @@ const initialState = {
   customHeroStyle: '',
   includeFeatures: [],
   customFeatures: [],
+  integrations: {
+    contactForm: { enabled: false, endpoint: '' },
+    booking: { enabled: false, url: '' },
+  },
   extraNotes: '',
 
   // AI suggestions
@@ -277,6 +282,16 @@ export function useFormState() {
     }))
   }, [])
 
+  const updateIntegration = useCallback((type, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      integrations: {
+        ...prev.integrations,
+        [type]: { ...prev.integrations[type], [field]: value },
+      },
+    }))
+  }, [])
+
   const resetForm = useCallback(() => {
     setFormData(initialState)
   }, [])
@@ -389,6 +404,7 @@ export function useFormState() {
     addCustomFeature,
     updateCustomFeature,
     removeCustomFeature,
+    updateIntegration,
     resetForm,
     // Multi-page
     addPage,

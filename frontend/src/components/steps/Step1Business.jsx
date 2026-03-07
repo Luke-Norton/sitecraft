@@ -9,8 +9,8 @@ export default function Step1Business({ formData, updateField, onNext }) {
       <ProgressBar step={1} />
       <StepHeader
         stepNumber={1}
-        title="Your Business"
-        description="Let's start with the basics. Tell us who you are."
+        title="About Your Business"
+        description="Tell us who you are and what you want your website to do."
       />
 
       <FormField label="Business name">
@@ -38,6 +38,18 @@ export default function Step1Business({ formData, updateField, onNext }) {
           value={formData.bizLocation}
           onChange={(value) => updateField('bizLocation', value)}
           placeholder="e.g. Denham Springs, Louisiana"
+        />
+      </FormField>
+
+      <FormField
+        label="When someone visits your website, what's the most important thing you want them to do?"
+        hint='Examples: "Book an appointment", "Call me", "Learn about my services and then contact me", "Buy my products online"'
+      >
+        <TextArea
+          value={formData.siteGoal}
+          onChange={(value) => updateField('siteGoal', value)}
+          placeholder="e.g. Call me for a free quote. I want my phone number to be the first thing they see."
+          rows={5}
         />
       </FormField>
 

@@ -1,4 +1,4 @@
-export default function ProgressBar({ step, totalSteps = 6 }) {
+export default function ProgressBar({ step, totalSteps = 4 }) {
   const percentage = Math.round((step / totalSteps) * 100)
 
   return (

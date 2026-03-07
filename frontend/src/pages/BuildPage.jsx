@@ -56,6 +56,7 @@ export default function BuildPage() {
   const [pages, setPages] = useState([])
   const [currentPage, setCurrentPage] = useState('index')
   const [chatMessages, setChatMessages] = useState([])
+  const [deviceMode, setDeviceMode] = useState('desktop') // 'desktop' | 'tablet' | 'mobile'
   const chatBottomRef = useRef(null)
   const iframeRef = useRef(null)
 
@@ -425,8 +426,28 @@ export default function BuildPage() {
             <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
             <div className="w-3 h-3 rounded-full bg-[#27c93f]" />
             <span className="ml-4 text-xs text-muted">Preview</span>
+            {/* Device switcher — centered */}
+            <div className="flex-1 flex justify-center">
+              <div className="flex items-center gap-1 bg-bg border border-border rounded-lg p-1">
+                {[
+                  { id: 'desktop', title: 'Desktop', icon: (<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>) },
+                  { id: 'tablet',  title: 'Tablet',  icon: (<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>) },
+                  { id: 'mobile',  title: 'Mobile',  icon: (<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>) },
+                ].map(({ id, title, icon }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    title={title}
+                    onClick={() => setDeviceMode(id)}
+                    className={`p-1.5 rounded-md transition-colors ${deviceMode === id ? 'bg-accent text-black' : 'text-muted hover:text-white'}`}
+                  >
+                    {icon}
+                  </button>
+                ))}
+              </div>
+            </div>
             {pages.length > 1 && (
-              <div className="ml-auto flex items-center gap-1">
+              <div className="flex items-center gap-1">
                 {pages.map((page) => (
                   <button key={page.name} onClick={() => setCurrentPage(page.name)}
                     className={`px-3 py-1 text-xs rounded-md transition-all ${currentPage === page.name ? 'bg-accent text-black font-medium' : 'text-muted hover:text-white hover:bg-white/10'}`}>
@@ -436,7 +457,17 @@ export default function BuildPage() {
               </div>
             )}
           </div>
-          <div className="flex-1 overflow-hidden">{renderPreview()}</div>
+          <div className={`flex-1 overflow-auto transition-colors ${deviceMode !== 'desktop' ? 'bg-[#111] flex justify-center items-start pt-8 pb-8' : 'overflow-hidden'}`}>
+            <div
+              className={`transition-all duration-300 ${
+                deviceMode === 'mobile'  ? 'w-[390px] h-[844px] rounded-[2rem] overflow-hidden shadow-2xl border border-[#333] flex-shrink-0' :
+                deviceMode === 'tablet'  ? 'w-[768px] h-[1024px] rounded-xl overflow-hidden shadow-2xl border border-[#333] flex-shrink-0' :
+                'w-full h-full'
+              }`}
+            >
+              {renderPreview()}
+            </div>
+          </div>
         </div>
       </div>
     </div>

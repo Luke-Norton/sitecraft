@@ -6,11 +6,9 @@ import Sidebar from '../components/Sidebar'
 import MobileNav from '../components/MobileNav'
 import {
   Step1Business,
-  Step2Goal,
   Step3Content,
   Step4Style,
   Step5Structure,
-  Step6Review,
 } from '../components/steps'
 
 export default function IntakeForm() {
@@ -45,6 +43,7 @@ export default function IntakeForm() {
     removePage,
     moveSectionToPage,
     toggleSectionAsPage,
+    updateIntegration,
   } = useFormState()
 
   const goTo = (step) => {
@@ -91,6 +90,7 @@ export default function IntakeForm() {
       data.append('customHeroStyle', formData.customHeroStyle)
       data.append('includeFeatures', JSON.stringify(formData.includeFeatures))
       data.append('customFeatures', JSON.stringify(formData.customFeatures.filter(Boolean)))
+      data.append('integrations', JSON.stringify(formData.integrations))
       data.append('extraNotes', formData.extraNotes)
 
       // Multi-page settings
@@ -155,31 +155,23 @@ export default function IntakeForm() {
         return <Step1Business {...commonProps} onNext={() => goTo(2)} />
       case 2:
         return (
-          <Step2Goal
+          <Step3Content
             {...commonProps}
+            setLogoFile={setLogoFile}
+            setPhotoFiles={setPhotoFiles}
             onBack={() => goTo(1)}
             onNext={() => goTo(3)}
           />
         )
       case 3:
         return (
-          <Step3Content
+          <Step4Style
             {...commonProps}
-            setLogoFile={setLogoFile}
-            setPhotoFiles={setPhotoFiles}
             onBack={() => goTo(2)}
             onNext={() => goTo(4)}
           />
         )
       case 4:
-        return (
-          <Step4Style
-            {...commonProps}
-            onBack={() => goTo(3)}
-            onNext={() => goTo(5)}
-          />
-        )
-      case 5:
         return (
           <Step5Structure
             {...commonProps}
@@ -203,15 +195,9 @@ export default function IntakeForm() {
             removePage={removePage}
             moveSectionToPage={moveSectionToPage}
             toggleSectionAsPage={toggleSectionAsPage}
-            onBack={() => goTo(4)}
-            onNext={() => goTo(6)}
-          />
-        )
-      case 6:
-        return (
-          <Step6Review
-            formData={formData}
-            onBack={() => goTo(5)}
+            integrations={formData.integrations}
+            updateIntegration={updateIntegration}
+            onBack={() => goTo(3)}
             onSubmit={handleSubmit}
             isSubmitting={isSubmitting}
           />
@@ -229,7 +215,7 @@ export default function IntakeForm() {
         <Sidebar currentStep={currentStep} onStepClick={goTo} />
 
         <main className="flex-1 min-h-screen">
-          <div className={`mx-auto px-6 py-12 md:py-16 ${currentStep === 5 ? 'max-w-5xl' : 'max-w-2xl'}`}>
+          <div className={`mx-auto px-6 py-12 md:py-16 ${currentStep === 4 ? 'max-w-5xl' : 'max-w-2xl'}`}>
             {error && (
               <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl mb-8 text-sm flex items-center gap-3">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

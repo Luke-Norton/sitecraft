@@ -88,8 +88,8 @@ export default function Step4Style({ formData, updateField, onBack, onNext }) {
 
   return (
     <div className="animate-fade-up">
-      <ProgressBar step={4} />
-      <StepHeader stepNumber={4} title="Design & Style" description="Choose the look, feel, and voice of your website." />
+      <ProgressBar step={3} />
+      <StepHeader stepNumber={3} title="Design & Style" description="Choose the look, feel, and voice of your website." />
 
       <FormField label="Site Personality">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">

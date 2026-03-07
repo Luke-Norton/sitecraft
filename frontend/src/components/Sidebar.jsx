@@ -1,12 +1,10 @@
 import { Link } from 'react-router-dom'
 
 const steps = [
-  { number: 1, label: 'Business' },
-  { number: 2, label: 'Goals' },
-  { number: 3, label: 'Assets' },
-  { number: 4, label: 'Design' },
-  { number: 5, label: 'Content' },
-  { number: 6, label: 'Review' },
+  { number: 1, label: 'About' },
+  { number: 2, label: 'Assets' },
+  { number: 3, label: 'Style' },
+  { number: 4, label: 'Build Your Site' },
 ]
 
 export default function Sidebar({ currentStep, onStepClick }) {

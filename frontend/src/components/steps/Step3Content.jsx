@@ -14,9 +14,9 @@ export default function Step3Content({
 }) {
   return (
     <div className="animate-fade-up">
-      <ProgressBar step={3} />
+      <ProgressBar step={2} />
       <StepHeader
-        stepNumber={3}
+        stepNumber={2}
         title="Your Assets"
         description="Upload your brand assets and add your contact details."
       />
